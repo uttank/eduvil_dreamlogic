@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>중학생 진로 탐색 🌟</title>
+    <link rel="stylesheet" href="/middle_school/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 헤더 -->
+        <header class="header">
+            <h1>🌟 중학생 진로 탐색 🌟</h1>
+            <p class="subtitle">나만의 꿈과 실천 계획을 찾아보아요!</p>
+        </header>
+
+        <!-- 진행 상황 표시 -->
+        <div class="progress-container" id="progressContainer" style="display: none;">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">0단계 / 6단계</div>
+        </div>
+
+        <!-- 메인 컨텐츠 영역 -->
+        <main class="main-content">
+            <!-- 시작 화면 -->
+            <div class="start-screen" id="startScreen">
+                <div class="welcome-card">
+                    <div class="emoji-large">🎯</div>
+                    <h2>안녕하세요!</h2>
+                    <p>흥미·강점·가치·미래 관심을 연결하여<br>
+                    <strong>"현실적인 진로 목표 + 실행 가능한 실천 계획"</strong>을<br>
+                    함께 만들어보아요!</p>
+                    <button class="btn btn-primary btn-large" id="startBtn">
+                        🚀 진로 탐색 시작하기
+                    </button>
+                </div>
+            </div>
+
+            <!-- 학생 정보 입력 화면 -->
+            <div class="student-info-screen" id="studentInfoScreen" style="display: none;">
+                <div class="question-card">
+                    <div class="emoji-medium">😊</div>
+                    <h2>안녕하세요! 진로 탐색을 시작해볼까요?</h2>
+                    <p>이름과 학년을 알려주세요!</p>
+                    
+                    <div class="input-group">
+                        <label for="studentName">이름</label>
+                        <input type="text" id="studentName" placeholder="예: 김민수" maxlength="10">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>학년</label>
+                        <div class="grade-options">
+                            <div class="grade-option">
+                                <input type="checkbox" id="grade1" name="studentGrade" value="1">
+                                <label for="grade1">1학년</label>
+                            </div>
+                            <div class="grade-option">
+                                <input type="checkbox" id="grade2" name="studentGrade" value="2">
+                                <label for="grade2">2학년</label>
+                            </div>
+                            <div class="grade-option">
+                                <input type="checkbox" id="grade3" name="studentGrade" value="3">
+                                <label for="grade3">3학년</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary" id="submitStudentInfo">
+                        ✨ 다음 단계로
+                    </button>
+                </div>
+            </div>
+
+            <!-- 질문 화면 -->
+            <div class="question-screen" id="questionScreen" style="display: none;">
+                <div class="question-card">
+                    <div class="emoji-medium" id="questionEmoji">🤔</div>
+                    <h2 id="questionTitle">질문을 불러오는 중...</h2>
+                    <p id="questionDescription">잠시만 기다려주세요.</p>
+                    
+                    <div class="choices-container" id="choicesContainer">
+                        <!-- 선택지들이 동적으로 추가됩니다 -->
+                    </div>
+                    
+                    <div class="custom-answer-container" id="customAnswerContainer" style="display: none;">
+                        <label for="customAnswer">직접 입력하기:</label>
+                        <textarea id="customAnswer" placeholder="자유롭게 써주세요!" rows="3" maxlength="200"></textarea>
+                    </div>
+                    
+                    <div class="encouragement" id="encouragement">
+                        좋아요! 정말 흥미로운 출발이에요 👍
+                    </div>
+                    
+                    <button class="btn btn-primary" id="submitAnswer" disabled>
+                        🎯 답변 제출하기
+                    </button>
+                </div>
+            </div>
+
+            <!-- AI 진로 추천 화면 (5단계) -->
+            <div class="recommendation-screen" id="recommendationScreen" style="display: none;">
+                <div class="question-card">
+                    <div class="emoji-large">🎯</div>
+                    <h2 id="studentNameDisplay">김민수</h2>
+                    <p>AI가 분석한 맞춤 꿈을 확인해주세요!</p>
+                    
+                    <div class="recommendation-loading" id="recommendationLoading">
+                        <div class="spinner"></div>
+                        <p>AI가 여러분의 답변을 분석하고 있어요... ✨</p>
+                    </div>
+                    
+                    <div class="recommendation-result" id="recommendationResult" style="display: none;">
+                        <div class="recommendation-card">
+                            <h3>🌟 최종꿈 한 문장</h3>
+                            <div class="career-recommendation" id="careerRecommendation">
+                                <!-- AI 추천 결과가 표시됩니다 -->
+                            </div>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" id="confirmDream">
+                                👍 확정! 이 꿈으로 할게요
+                            </button>
+                            <button class="btn btn-secondary" id="modifyDream">
+                                🔄 수정하고 싶어요
+                            </button>
+                        </div>
+                        
+                        <!-- 수정 요청 입력창 -->
+                        <div class="modification-container" id="modificationContainer" style="display: none;">
+                            <label for="modificationRequest">어떤 부분을 수정하고 싶나요?</label>
+                            <textarea id="modificationRequest" placeholder="수정하고 싶은 내용을 자유롭게 써주세요!" rows="3" maxlength="200"></textarea>
+                            <div class="modification-buttons">
+                                <button class="btn btn-primary" id="submitModification">수정 요청</button>
+                                <button class="btn btn-secondary" id="cancelModification">취소</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 드림로직 화면 (6단계) -->
+            <div class="dream-logic-screen" id="dreamLogicScreen" style="display: none;">
+                <div class="question-card">
+                    <div class="emoji-large">🌈</div>
+                    <h2>꿈을 이루는 구체적인 방법</h2>
+                    <p>학교생활과 일상에서 실천할 수 있는 계획이에요!</p>
+                    
+                    <div class="dream-logic-loading" id="dreamLogicLoading">
+                        <div class="spinner"></div>
+                        <p>꿈을 이루는 특별한 실천 계획을 만들고 있어요... ✨</p>
+                    </div>
+                    
+                    <div class="dream-logic-result" id="dreamLogicResult" style="display: none;">
+                        <div class="dream-steps" id="dreamSteps">
+                            <!-- 꿈 실현 단계들이 표시됩니다 -->
+                        </div>
+                        
+                        <div class="encouragement-message" id="encouragementMessage">
+                            <!-- 응원 메시지가 표시됩니다 -->
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons" style="display: none;" id="dreamLogicActions">
+                        <button class="btn btn-success" id="downloadDreamLogicPDF">
+                            📄 드림로직 PDF 다운로드
+                        </button>
+                        <button class="btn btn-primary" id="finishJourney">
+                            🏆 홈페이지로 이동!
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 최종 완료 화면 -->
+            <div class="completion-screen" id="completionScreen" style="display: none;">
+                <div class="completion-card">
+                    <div class="emoji-large">🎉</div>
+                    <h2 id="completionTitle">축하합니다!</h2>
+                    <p id="completionMessage">모든 단계를 완료했어요! 정말 대단해요!</p>
+                    
+                    <div class="final-dream" id="finalDream">
+                        <!-- 최종 확정된 꿈이 표시됩니다 -->
+                    </div>
+                    
+                    <!-- AI 응원메모 표시 영역 -->
+                    <div class="final-encouragement" id="finalEncouragement" style="display: none;">
+                        <div class="encouragement-card">
+                            <h3>💝 AI가 보내는 특별한 응원 메시지</h3>
+                            <p id="finalEncouragementText"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-secondary" id="restartJourney">
+                            🔄 다시 시작하기
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 로딩 오버레이 -->
+        <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+            <div class="spinner"></div>
+            <p>잠시만 기다려주세요...</p>
+        </div>
+    </div>
+
+    <script src="/middle_school/static/script.js"></script>
+</body>
+</html>

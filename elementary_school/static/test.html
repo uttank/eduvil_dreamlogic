@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>진로 탐색 테스트</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        #result {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌟 초등학생 진로 탐색 🌟</h1>
+        <p>버튼을 클릭해서 진로 탐색을 시작해보세요!</p>
+        
+        <button id="startBtn" class="btn">
+            🚀 진로 탐색 시작하기
+        </button>
+        
+        <button id="testBtn" class="btn">
+            🧪 테스트 버튼
+        </button>
+        
+        <div id="result">
+            <h3>결과가 여기에 표시됩니다</h3>
+        </div>
+    </div>
+
+    <script>
+        console.log('🌟 JavaScript 시작!');
+        
+        // 페이지 로드 직후 실행
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📄 DOM 로드 완료');
+            
+            // 테스트 버튼
+            const testBtn = document.getElementById('testBtn');
+            if (testBtn) {
+                console.log('✅ 테스트 버튼 발견');
+                testBtn.onclick = function() {
+                    alert('🧪 테스트 버튼이 작동합니다!');
+                    console.log('🖱️ 테스트 버튼 클릭됨');
+                    document.getElementById('result').style.display = 'block';
+                    document.getElementById('result').innerHTML = '<h3>✅ JavaScript가 정상 작동합니다!</h3>';
+                };
+            }
+            
+            // 진로 탐색 시작 버튼
+            const startBtn = document.getElementById('startBtn');
+            if (startBtn) {
+                console.log('✅ 시작 버튼 발견');
+                startBtn.onclick = function() {
+                    console.log('🚀 진로 탐색 시작 버튼 클릭됨!');
+                    startCareerExploration();
+                };
+            }
+        });
+        
+        // 진로 탐색 시작 함수
+        async function startCareerExploration() {
+            console.log('📡 API 호출 시작');
+            document.getElementById('result').style.display = 'block';
+            document.getElementById('result').innerHTML = '<h3>⏳ 진로 탐색 세션을 시작하는 중...</h3>';
+            
+            try {
+                // 동적 포트 감지
+                const baseUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port || '8000'}`;
+                
+                const response = await fetch(`${baseUrl}/career/start`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                console.log('📡 응답 상태:', response.status);
+                const data = await response.json();
+                console.log('📡 응답 데이터:', data);
+                
+                if (data.success) {
+                    document.getElementById('result').innerHTML = 
+                        '<h3>✅ 성공!</h3>' +
+                        '<p>세션 ID: ' + data.data.session_id + '</p>' +
+                        '<p>' + data.data.message + '</p>';
+                } else {
+                    document.getElementById('result').innerHTML = 
+                        '<h3>❌ 실패</h3>' +
+                        '<p>' + (data.message || '알 수 없는 오류') + '</p>';
+                }
+            } catch (error) {
+                console.error('❌ 오류:', error);
+                document.getElementById('result').innerHTML = 
+                    '<h3>❌ 네트워크 오류</h3>' +
+                    '<p>' + error.message + '</p>';
+            }
+        }
+        
+        console.log('🚀 JavaScript 로드 완료!');
+    </script>
+</body>
+</html>

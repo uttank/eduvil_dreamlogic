@@ -1,0 +1,1722 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>초등학생 진로 탐색 🌟</title>
+    <link rel="stylesheet" href="/static/style.css?v=2025092801">
+</head>
+<body>
+    <div class="container">
+        <!-- 헤더 -->
+        <header class="header">
+            <h1>🌟 초등학생 진로 탐색 🌟</h1>
+            <p class="subtitle">나만의 꿈을 찾아보아요!</p>
+        </header>
+
+        <!-- 진행 상황 표시 -->
+        <div class="progress-container" id="progressContainer" style="display: none;">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">0단계 / 5단계</div>
+        </div>
+
+        <!-- 메인 컨텐츠 영역 -->
+        <main class="main-content">
+            <!-- 시작 화면 -->
+            <div class="start-screen" id="startScreen">
+                <div class="welcome-card">
+                    <div class="emoji-large">🎯</div>
+                    <h2>안녕하세요!</h2>
+                    <p>재미있는 질문들을 통해<br>여러분의 꿈을 찾아보아요!</p>
+                    <button class="btn btn-primary btn-large" id="startBtn">
+                        🚀 진로 탐색 시작하기
+                    </button>
+                </div>
+            </div>
+
+            <!-- 학생 정보 입력 화면 -->
+            <div class="student-info-screen" id="studentInfoScreen" style="display: none;">
+                <div class="question-card">
+                    <div class="emoji-medium">😊</div>
+                    <h2>안녕하세요! 진로 탐색을 시작해볼까요?</h2>
+                    <p>이름과 학년을 알려주세요!</p>
+                    
+                    <div class="input-group">
+                        <label for="studentName">이름</label>
+                        <input type="text" id="studentName" placeholder="예: 김민수" maxlength="10">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>학년</label>
+                        <div class="grade-options">
+                            <div class="grade-option">
+                                <input type="checkbox" id="grade5" name="studentGrade" value="5">
+                                <label for="grade5">5학년</label>
+                            </div>
+                            <div class="grade-option">
+                                <input type="checkbox" id="grade6" name="studentGrade" value="6">
+                                <label for="grade6">6학년</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+
+                    
+                    <button class="btn btn-primary" id="submitStudentInfo">
+                        ✨ 다음 단계로
+                    </button>
+                </div>
+            </div>
+
+            <!-- 질문 화면 -->
+            <div class="question-screen" id="questionScreen" style="display: none;">
+                <div class="question-card">
+                    <div class="emoji-medium" id="questionEmoji">🤔</div>
+                    <h2 id="questionTitle">질문을 불러오는 중...</h2>
+                    <p id="questionDescription">잠시만 기다려주세요.</p>
+                    
+                    <div class="choices-container" id="choicesContainer">
+                        <!-- 선택지들이 동적으로 추가됩니다 -->
+                    </div>
+                    
+                    <div class="custom-answer-container" id="customAnswerContainer" style="display: none;">
+                        <label for="customAnswer">직접 입력하기:</label>
+                        <textarea id="customAnswer" placeholder="자유롭게 써주세요!" rows="3" maxlength="200"></textarea>
+                    </div>
+                    
+                    <div class="encouragement" id="encouragement">
+                        정말 특별한 생각이에요! 🌟
+                    </div>
+                    
+                    <button class="btn btn-primary" id="submitAnswer" disabled>
+                        🎯 답변 제출하기
+                    </button>
+                </div>
+            </div>
+
+            <!-- AI 진로 추천 화면 -->
+            <div class="recommendation-screen" id="recommendationScreen" style="display: none;">
+                <div class="question-card">
+                    <div class="emoji-large">🎯</div>
+                    <h2 id="studentNameDisplay">김민수</h2>
+                    <p>AI가 분석한 맞춤 진로를 확인해주세요!</p>
+                    
+                    <div class="recommendation-loading" id="recommendationLoading">
+                        <div class="spinner"></div>
+                        <p>AI가 여러분의 답변을 분석하고 있어요... ✨</p>
+                    </div>
+                    
+                    <div class="recommendation-result" id="recommendationResult" style="display: none;">
+                        <div class="recommendation-card">
+                            <h3>🌟 추천 진로</h3>
+                            <div class="career-recommendation" id="careerRecommendation">
+                                <!-- AI 추천 결과가 표시됩니다 -->
+                            </div>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" id="acceptRecommendation">
+                                👍 좋아요! 이 진로로 할게요
+                            </button>
+                            <button class="btn btn-secondary" id="modifyRecommendation">
+                                🔄 다른 진로도 보고 싶어요
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 최종 완료 화면 -->
+            <div class="completion-screen" id="completionScreen" style="display: none;">
+                <div class="completion-card">
+                    <div class="emoji-large">🎉</div>
+                    <h2 id="completionTitle">축하합니다!</h2>
+                    <p id="completionMessage">모든 단계를 완료했어요! 정말 대단해요!</p>
+                    
+                    <div class="final-career" id="finalCareer">
+                        <!-- 최종 확정된 진로가 표시됩니다 -->
+                    </div>
+                    
+                    <!-- AI 응원메모 표시 영역 -->
+                    <div class="final-encouragement" id="finalEncouragement" style="display: none;">
+                        <div class="encouragement-card">
+                            <h3>💝 AI가 보내는 특별한 응원 메시지</h3>
+                            <p id="finalEncouragementText"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" id="generateDreamLogic">
+                            🌈 꿈 실현 방법 알아보기
+                        </button>
+                        <button class="btn btn-secondary" id="restartJourney">
+                            🔄 다시 시작하기
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 드림로직 화면 -->
+            <div class="dream-logic-screen" id="dreamLogicScreen" style="display: none;">
+                <div class="question-card">
+                    <div class="emoji-large">🌈</div>
+                    <h2>꿈을 이루는 방법</h2>
+                    
+                    <div class="dream-logic-loading" id="dreamLogicLoading">
+                        <div class="spinner"></div>
+                        <p>꿈을 이루는 특별한 방법을 만들고 있어요... ✨</p>
+                    </div>
+                    
+                    <div class="dream-logic-result" id="dreamLogicResult" style="display: none;">
+                        <div class="dream-steps" id="dreamSteps">
+                            <!-- 꿈 실현 단계들이 표시됩니다 -->
+                        </div>
+                        
+                        <div class="encouragement-message" id="encouragementMessage">
+                            <!-- 응원 메시지가 표시됩니다 -->
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons" style="display: none;" id="dreamLogicActions">
+                        <button class="btn btn-success" id="downloadDreamLogicPDF">
+                            📄 PDF 다운로드 (웹 스타일)
+                        </button>
+                        <button class="btn btn-primary" id="finishJourney">
+                            🏆 진로 탐색 완료!
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 로딩 오버레이 -->
+        <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+            <div class="spinner"></div>
+            <p>잠시만 기다려주세요...</p>
+        </div>
+    </div>
+
+    <script>
+        console.log('🌟 인라인 JavaScript 시작');
+        
+        // API 기본 URL 설정 (현재 페이지의 호스트와 포트 사용)
+        const API_BASE_URL = `${window.location.protocol}//${window.location.host}`;
+        console.log('🔗 API 기본 URL:', API_BASE_URL);
+        
+        // 전역 변수
+        let sessionId = null;
+        let studentInfo = null;
+        let encouragementMessage = null; // AI가 생성한 응원메모 저장
+        
+        // DOM 로드 완료 후 실행
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📄 DOM 로드 완료');
+            
+            // 시작 버튼 이벤트 등록
+            const startBtn = document.getElementById('startBtn');
+            if (startBtn) {
+                console.log('✅ 시작 버튼 발견');
+                startBtn.style.border = '3px solid #4CAF50';
+                startBtn.onclick = function() {
+                    console.log('🖱️ 시작 버튼 클릭됨!');
+                    startCareerExploration();
+                };
+            } else {
+                console.error('❌ 시작 버튼을 찾을 수 없습니다');
+            }
+            
+            // 학생 정보 제출 버튼
+            const submitStudentInfoBtn = document.getElementById('submitStudentInfo');
+            if (submitStudentInfoBtn) {
+                submitStudentInfoBtn.onclick = function() {
+                    console.log('📝 학생 정보 제출 버튼 클릭');
+                    submitStudentInfoData();
+                };
+            }
+
+            // 학년 선택 이벤트 처리
+            setupGradeSelection();
+        });
+
+        // 학년 선택 관련 함수들
+        function setupGradeSelection() {
+            console.log('🎓 학년 선택 이벤트 설정');
+            
+            const gradeInputs = document.querySelectorAll('input[name="studentGrade"]');
+            console.log('📋 학년 체크박스 개수:', gradeInputs.length);
+            
+            gradeInputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    console.log('🎓 학년 체크박스 클릭:', this.value, '체크됨:', this.checked);
+                    
+                    if (this.checked) {
+                        // 다른 체크박스 해제 (단일 선택)
+                        gradeInputs.forEach(otherInput => {
+                            if (otherInput !== this) {
+                                otherInput.checked = false;
+                                otherInput.closest('.grade-option').classList.remove('selected');
+                            }
+                        });
+                        this.closest('.grade-option').classList.add('selected');
+                        console.log('✅ 학년 선택:', this.value + '학년');
+                    } else {
+                        this.closest('.grade-option').classList.remove('selected');
+                        console.log('❌ 학년 선택 해제');
+                    }
+                });
+                
+                // div 클릭으로도 선택 가능하게 하기
+                const gradeOption = input.closest('.grade-option');
+                gradeOption.addEventListener('click', function(e) {
+                    console.log('🖱️ 학년 옵션 div 클릭');
+                    if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'LABEL') {
+                        input.click();
+                    }
+                });
+            });
+        }
+        
+        // 진로 탐색 시작 함수
+        async function startCareerExploration() {
+            console.log('🚀 진로 탐색 시작');
+            
+            try {
+                showLoading(true);
+                
+                const response = await fetch(`${API_BASE_URL}/career/start`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                console.log('📡 API 응답:', data);
+                
+                if (data.success) {
+                    sessionId = data.data.session_id;
+                    console.log('✅ 세션 ID 저장:', sessionId);
+                    showScreen('studentInfoScreen');
+                    updateProgress(0);
+                } else {
+                    showError('세션 시작에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('❌ 오류:', error);
+                showError('서버 연결에 실패했습니다.');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // 학생 정보 제출 함수
+        async function submitStudentInfoData() {
+            console.log('📝 학생 정보 제출 시작');
+            
+            // 이름 가져오기
+            const name = document.getElementById('studentName')?.value.trim();
+            console.log('📝 입력된 이름:', name);
+            
+            // 선택된 학년 가져오기
+            const selectedGrade = document.querySelector('input[name="studentGrade"]:checked');
+            const grade = selectedGrade ? parseInt(selectedGrade.value) : null;
+            console.log('📝 선택된 학년:', grade);
+
+            if (!name || !grade) {
+                console.error('❌ 필수 정보 누락 - 이름:', name, '학년:', grade);
+                showError('이름과 학년을 입력해주세요.');
+                return;
+            }
+
+            // 학생 정보 객체 생성 (age, school 프로퍼티 제거)
+            studentInfo = { name, grade };
+            console.log('📝 최종 학생 정보:', studentInfo);
+
+            try {
+                showLoading(true);
+                console.log('🌐 서버 연결 시도 중...');
+
+                const requestBody = {
+                    session_id: sessionId,
+                    student_info: studentInfo,
+                    response: {
+                        choice_numbers: [],
+                        custom_answer: `안녕하세요! 저는 ${name}이고 ${grade}학년이에요.`
+                    }
+                };
+                console.log('📤 서버로 전송할 데이터:', requestBody);
+
+                const response = await fetch(`${API_BASE_URL}/career/${sessionId}/submit`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                console.log('📡 서버 응답 상태:', response.status, response.statusText);
+                
+                if (!response.ok) {
+                    throw new Error(`서버 응답 오류: ${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                console.log('📡 학생정보 제출 응답:', data);
+                console.log('✅ 서버 연결 성공!');
+                
+                if (data.success) {
+                    console.log('🎉 학생 정보 서버 저장 성공!');
+                    console.log('📋 서버에 저장된 정보 확인:');
+                    console.log('  - 이름:', studentInfo.name);
+                    console.log('  - 학년:', studentInfo.grade);
+                    
+                    if (data.data && data.data.next_question) {
+                        console.log('📝 다음 질문 데이터 수신:', data.data.next_question);
+                        console.log('🔄 1단계 질문 화면으로 이동 중...');
+                        showQuestionScreen(data.data.next_question);
+                    } else {
+                        console.warn('⚠️ 다음 질문 데이터가 없습니다:', data.data);
+                        showError('다음 단계 정보를 불러올 수 없습니다.');
+                    }
+                } else {
+                    console.error('❌ 서버 저장 실패:', data.message || '알 수 없는 오류');
+                    showError('학생 정보 저장에 실패했습니다: ' + (data.message || ''));
+                }
+            } catch (error) {
+                console.error('❌ 네트워크 오류:', error);
+                showError('서버 연결에 실패했습니다: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // 화면 전환 함수
+        function showScreen(screenId) {
+            console.log('🖼️ 화면 전환:', screenId);
+            
+            const screens = [
+                'startScreen', 'studentInfoScreen', 'questionScreen', 
+                'recommendationScreen', 'completionScreen', 'dreamLogicScreen'
+            ];
+            
+            screens.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.style.display = 'none';
+                }
+            });
+
+            const targetScreen = document.getElementById(screenId);
+            if (targetScreen) {
+                targetScreen.style.display = 'block';
+            }
+            
+            const progressContainer = document.getElementById('progressContainer');
+            if (progressContainer) {
+                progressContainer.style.display = screenId !== 'startScreen' ? 'block' : 'none';
+            }
+        }
+        
+        // 진행률 업데이트 함수
+        function updateProgress(stage, completed = false) {
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            
+            if (!progressFill || !progressText) return;
+            
+            let percentage;
+            let text;
+            
+            if (completed) {
+                percentage = 100;
+                text = '완료! 🎉';
+            } else {
+                percentage = (stage / 5) * 100;
+                text = `${stage}단계 / 5단계`;
+            }
+            
+            progressFill.style.width = `${percentage}%`;
+            progressText.textContent = text;
+        }
+        
+        // 로딩 표시 함수
+        function showLoading(show) {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                overlay.style.display = show ? 'flex' : 'none';
+            }
+        }
+        
+        // 현재 질문 데이터 저장
+        let currentQuestionData = null;
+        let selectedChoices = [];
+        
+        // 현재 단계 번호 가져오기 함수
+        function getCurrentStage() {
+            if (currentQuestionData && currentQuestionData.stage) {
+                return parseInt(currentQuestionData.stage.replace('step_', ''));
+            }
+            return 1; // 기본값
+        }
+        
+        // 단계별 제목 매핑 (models.py의 STAGE_QUESTIONS 내용 참조)
+        function getStageTitle(stageNumber) {
+            const stageTitles = {
+                0: "안녕하세요! 진로 탐색을 시작해볼까요? 이름과 나이를 알려주세요!",
+                1: "무엇을 할 때 시간이 빨리 가나요? (최대 2개까지 선택 가능)",
+                2: "다른 사람에게 자랑 할만한 나만의 장점이 무엇인가요? (최대 2개까지 선택 가능)", 
+                3: "어떤 일을 할 때 행복함을 느끼나요? (1개만 선택)",
+                4: "미래 사회에서 가장 걱정되는 것은 무엇인가요? (1개만 선택)",
+                5: "AI가 분석한 맞춤 진로를 확인해주세요!"
+            };
+            return stageTitles[stageNumber] || "질문";
+        }
+        
+        // 질문 화면 표시 함수
+        function showQuestionScreen(questionData) {
+            console.log('📋 질문 화면 표시:', questionData);
+            currentQuestionData = questionData;
+            selectedChoices = [];
+            
+            // 질문 화면으로 전환
+            showScreen('questionScreen');
+            
+            // 진행률 업데이트 (현재 단계)
+            updateProgress(questionData.stage || 1);
+            
+            // 질문 내용 업데이트
+            const questionTitle = document.getElementById('questionTitle');
+            const questionContent = document.getElementById('questionDescription');
+            const choicesContainer = document.getElementById('choicesContainer');
+            
+            // stage 값에서 숫자 추출
+            const stageNumber = questionData.stage ? parseInt(questionData.stage.replace('step_', '')) : 1;
+            const stageQuestion = getStageTitle(stageNumber);
+            
+            if (questionTitle) {
+                questionTitle.textContent = `${stageNumber}단계`;
+            }
+            
+            if (questionContent) {
+                // models.py의 question 내용을 우선 사용, 없으면 API 응답 사용
+                console.log('🔍 Stage Question:', stageQuestion);
+                console.log('🔍 API Question:', questionData.question);
+                console.log('🔍 Question Data 전체:', questionData);
+                
+                const finalQuestion = stageQuestion || questionData.question || '';
+                console.log('🔍 최종 질문:', finalQuestion);
+                questionContent.textContent = finalQuestion;
+            }
+            
+            // 선택지 렌더링 (체크박스/라디오 버튼 형태)
+            if (choicesContainer && questionData.choices) {
+                choicesContainer.innerHTML = '';
+                // stage 값에서 숫자 추출하여 비교
+                const stageNumber = questionData.stage ? parseInt(questionData.stage.replace('step_', '')) : 1;
+                const isMultipleChoice = stageNumber <= 2; // 1-2단계는 다중선택, 3-4단계는 단일선택
+                console.log('🔍 Stage:', questionData.stage, 'Number:', stageNumber, 'Multiple:', isMultipleChoice);
+                
+                questionData.choices.forEach((choice, index) => {
+                    const choiceDiv = document.createElement('div');
+                    choiceDiv.className = 'choice-item';
+                    choiceDiv.style.cursor = 'pointer';
+                    
+                    const input = document.createElement('input');
+                    input.type = isMultipleChoice ? 'checkbox' : 'radio';
+                    input.name = 'choice';
+                    input.value = index + 1;
+                    input.id = `choice${index + 1}`;
+                    
+                    const label = document.createElement('label');
+                    label.htmlFor = `choice${index + 1}`;
+                    label.textContent = choice;
+                    label.style.cursor = 'pointer';
+                    
+                    // "기타" 항목인지 확인
+                    const isOtherOption = choice.includes('기타') || choice === '기타';
+                    
+                    // 전체 div 클릭으로도 선택 가능하도록 개선
+                    const handleClick = () => {
+                        console.log('🔥 선택지 클릭:', choice, '현재 체크 상태:', input.checked);
+                        
+                        const currentStage = getCurrentStage();
+                        
+                        if (isOtherOption) {
+                            // 기타 항목을 클릭한 경우
+                            if (!input.checked) {
+                                // 기타를 선택하려는 경우 - 1~4단계에서 다른 모든 선택 해제
+                                if (currentStage <= 4) {
+                                    document.querySelectorAll('input[name="choice"]').forEach(inp => {
+                                        if (inp !== input) {
+                                            inp.checked = false;
+                                        }
+                                    });
+                                }
+                                input.checked = true;
+                                handleOtherSelection(input, currentStage);
+                            } else {
+                                // 기타를 해제하려는 경우
+                                input.checked = false;
+                                handleOtherSelection(input, currentStage);
+                            }
+                        } else {
+                            // 일반 항목을 클릭한 경우
+                            if (!input.checked) {
+                                // 일반 항목을 선택하려는 경우
+                                if (isMultipleChoice) {
+                                    // 다중 선택에서 2개 제한 체크 (기타 제외)
+                                    const checkedInputs = document.querySelectorAll('input[name="choice"]:checked');
+                                    const nonOtherChecked = Array.from(checkedInputs).filter(inp => {
+                                        const label = document.querySelector(`label[for="${inp.id}"]`);
+                                        return label && !(label.textContent.includes('기타') || label.textContent === '기타');
+                                    });
+                                    if (nonOtherChecked.length >= 2) {
+                                        showError('최대 2개까지만 선택할 수 있습니다.');
+                                        return;
+                                    }
+                                } else {
+                                    // 라디오 버튼의 경우 다른 모든 선택 해제
+                                    document.querySelectorAll('input[name="choice"]').forEach(inp => {
+                                        inp.checked = false;
+                                    });
+                                }
+                                
+                                // 1~4단계에서 일반 항목 선택 시 기타 항목 해제
+                                if (currentStage <= 4) {
+                                    document.querySelectorAll('input[name="choice"]').forEach(inp => {
+                                        const label = document.querySelector(`label[for="${inp.id}"]`);
+                                        const isOther = label && (label.textContent.includes('기타') || label.textContent === '기타');
+                                        if (isOther) {
+                                            inp.checked = false;
+                                        }
+                                    });
+                                }
+                                
+                                input.checked = true;
+                            } else {
+                                // 일반 항목을 해제하려는 경우
+                                input.checked = false;
+                            }
+                            updateSelectedChoices(input);
+                        }
+                        
+                        console.log('🔄 처리 후 상태:', input.checked);
+                    };
+                    
+                    // 이벤트 리스너 등록
+                    choiceDiv.addEventListener('click', handleClick);
+                    input.addEventListener('click', (e) => e.stopPropagation()); // 중복 클릭 방지
+                    label.addEventListener('click', (e) => e.stopPropagation()); // 중복 클릭 방지
+                    
+                    choiceDiv.appendChild(input);
+                    choiceDiv.appendChild(label);
+                    choicesContainer.appendChild(choiceDiv);
+                });
+            }
+            
+            // 커스텀 입력창 초기화
+            const customAnswerContainer = document.getElementById('customAnswerContainer');
+            const customAnswerInput = document.getElementById('customAnswer');
+            if (customAnswerContainer) {
+                customAnswerContainer.style.display = 'none';
+            }
+            if (customAnswerInput) {
+                customAnswerInput.value = '';
+            }
+            
+            // 제출 버튼 업데이트
+            const submitButton = document.getElementById('submitAnswer');
+            if (submitButton) {
+                submitButton.textContent = '🚀 다음 단계로';
+                submitButton.disabled = true;
+                submitButton.onclick = () => submitCurrentAnswer();
+            }
+        }
+        
+        // "기타" 선택 처리 함수
+        function handleOtherSelection(clickedInput, stageNumber) {
+            console.log('📝 기타 선택 처리:', clickedInput.value, 'Stage:', stageNumber, 'Checked:', clickedInput.checked);
+            
+            const customAnswerContainer = document.getElementById('customAnswerContainer');
+            const customAnswerInput = document.getElementById('customAnswer');
+            
+            if (clickedInput.checked) {
+                // 기타 선택 시
+                // 커스텀 입력창 표시
+                if (customAnswerContainer) {
+                    customAnswerContainer.style.display = 'block';
+                }
+                if (customAnswerInput) {
+                    customAnswerInput.focus();
+                    // 입력 시 제출 버튼 활성화
+                    customAnswerInput.oninput = () => updateSubmitButton();
+                }
+            } else {
+                // 기타 선택 해제 시
+                if (customAnswerContainer) {
+                    customAnswerContainer.style.display = 'none';
+                }
+                if (customAnswerInput) {
+                    customAnswerInput.value = '';
+                }
+            }
+            
+            // 현재 체크된 모든 항목을 기반으로 selectedChoices 업데이트
+            updateSelectedChoices();
+        }
+        
+        // 제출 버튼 상태 업데이트
+        function updateSubmitButton() {
+            const submitButton = document.getElementById('submitAnswer');
+            const customAnswerInput = document.getElementById('customAnswer');
+            const customAnswerContainer = document.getElementById('customAnswerContainer');
+            
+            console.log('🔄 updateSubmitButton 호출됨');
+            console.log('📋 현재 selectedChoices:', selectedChoices);
+            
+            if (submitButton) {
+                let canSubmit = false;
+                
+                if (customAnswerContainer && customAnswerContainer.style.display !== 'none') {
+                    // 커스텀 입력이 활성화된 경우
+                    const customValue = customAnswerInput ? customAnswerInput.value.trim() : '';
+                    canSubmit = customValue.length > 0;
+                    console.log('📝 커스텀 입력 모드, 입력값:', customValue, '제출 가능:', canSubmit);
+                } else {
+                    // 일반 선택지의 경우
+                    canSubmit = selectedChoices.length > 0;
+                    console.log('✅ 일반 선택 모드, 선택된 개수:', selectedChoices.length, '제출 가능:', canSubmit);
+                }
+                
+                submitButton.disabled = !canSubmit;
+                console.log('🔘 제출 버튼 상태:', canSubmit ? '활성화' : '비활성화');
+            }
+        }
+        
+        // 선택된 선택지 업데이트
+        function updateSelectedChoices(clickedInput = null) {
+            console.log('🔄 updateSelectedChoices 호출됨');
+            
+            // 현재 체크된 모든 input 요소 찾기
+            const checkedInputs = document.querySelectorAll('input[name="choice"]:checked');
+            console.log('🔍 체크된 input 요소들:', checkedInputs.length, '개');
+            
+            // 선택된 값들 배열로 저장
+            selectedChoices = Array.from(checkedInputs).map(input => parseInt(input.value));
+            console.log('📋 선택된 선택지 번호들:', selectedChoices);
+            
+            // 모든 choice-item에 대해 선택 상태 시각적 표시 업데이트
+            document.querySelectorAll('.choice-item').forEach((choiceDiv, index) => {
+                const input = choiceDiv.querySelector('input');
+                if (input && input.checked) {
+                    choiceDiv.classList.add('selected');
+                    console.log(`✅ 선택지 ${index + 1} 선택됨`);
+                } else {
+                    choiceDiv.classList.remove('selected');
+                }
+            });
+            
+            // 일반 선택지 선택 시 커스텀 입력창 숨기기 및 초기화
+            const customAnswerContainer = document.getElementById('customAnswerContainer');
+            const customAnswerInput = document.getElementById('customAnswer');
+            
+            // 기타가 선택되어 있는지 확인
+            const otherInputChecked = Array.from(checkedInputs).some(input => {
+                const label = document.querySelector(`label[for="${input.id}"]`);
+                return label && (label.textContent.includes('기타') || label.textContent === '기타');
+            });
+            
+            if (customAnswerContainer) {
+                if (otherInputChecked) {
+                    // 기타가 선택된 경우 커스텀 입력창 표시
+                    customAnswerContainer.style.display = 'block';
+                } else {
+                    // 기타가 선택되지 않은 경우 커스텀 입력창 숨기고 값 초기화
+                    customAnswerContainer.style.display = 'none';
+                    if (customAnswerInput) {
+                        customAnswerInput.value = '';
+                    }
+                }
+            }
+            
+            updateSubmitButton();
+            console.log('선택된 항목들:', selectedChoices);
+        }
+        
+        // 현재 답변 제출 함수
+        async function submitCurrentAnswer() {
+            if (selectedChoices.length === 0) {
+                showError('선택지를 하나 이상 선택해주세요.');
+                return;
+            }
+            
+            // 기타 항목이 실제로 선택되어 있는지 확인
+            const checkedInputs = document.querySelectorAll('input[name="choice"]:checked');
+            const otherInputSelected = Array.from(checkedInputs).some(input => {
+                const label = document.querySelector(`label[for="${input.id}"]`);
+                return label && (label.textContent.includes('기타') || label.textContent === '기타');
+            });
+            
+            // 커스텀 입력 처리
+            const customAnswerContainer = document.getElementById('customAnswerContainer');
+            const customAnswerInput = document.getElementById('customAnswer');
+            let customAnswer = "";
+            
+            // 기타가 실제로 선택된 경우에만 커스텀 입력값 처리
+            if (otherInputSelected && customAnswerContainer && customAnswerContainer.style.display !== 'none' && customAnswerInput) {
+                customAnswer = customAnswerInput.value.trim();
+                if (!customAnswer) {
+                    showError('기타를 선택하셨습니다. 내용을 입력해주세요.');
+                    return;
+                }
+            } else {
+                // 기타가 선택되지 않았다면 커스텀 답변은 빈 문자열로 설정
+                customAnswer = "";
+            }
+            
+            console.log('✅ 선택 제출:', selectedChoices);
+            console.log('✅ 커스텀 답변:', customAnswer);
+            
+            try {
+                showLoading(true);
+                
+                const response = await fetch(`${API_BASE_URL}/career/${sessionId}/submit`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        session_id: sessionId,
+                        student_info: studentInfo,
+                        response: {
+                            choice_numbers: selectedChoices,
+                            custom_answer: customAnswer
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                console.log('📡 선택 응답:', data);
+                
+                if (data.success) {
+                    if (data.data.next_question) {
+                        // 5단계인 경우 AI 추천 요청
+                        const nextStage = data.data.next_question.stage;
+                        if (nextStage === 'step_5') {
+                            await requestAIRecommendation();
+                        } else {
+                            // 다음 질문으로 이동
+                            showQuestionScreen(data.data.next_question);
+                        }
+                    } else if (data.data.recommendation) {
+                        // 추천 결과 표시
+                        showRecommendationScreen(data.data.recommendation || data.data);
+                    } else {
+                        // 완료 화면
+                        showScreen('completionScreen');
+                        updateProgress(5, true);
+                    }
+                } else {
+                    showError('응답 처리에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('❌ 오류:', error);
+                showError('서버 연결에 실패했습니다.');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // 추천 결과 화면 표시 함수
+        function showRecommendationScreen(recommendation) {
+            console.log('🎯 추천 결과 표시:', recommendation);
+            showScreen('recommendationScreen');
+            updateProgress(5, true);
+            
+            // 학생 이름 표시
+            const studentNameDisplay = document.getElementById('studentNameDisplay');
+            if (studentNameDisplay && studentInfo) {
+                studentNameDisplay.textContent = `${studentInfo.name}님`;
+            }
+            
+            // 로딩 표시
+            const recommendationLoading = document.getElementById('recommendationLoading');
+            const recommendationResult = document.getElementById('recommendationResult');
+            
+            if (recommendationLoading) {
+                recommendationLoading.style.display = 'block';
+            }
+            if (recommendationResult) {
+                recommendationResult.style.display = 'none';
+            }
+            
+            // 실제 LLM 추천 결과가 있으면 표시
+            setTimeout(() => {
+                if (recommendationLoading) {
+                    recommendationLoading.style.display = 'none';
+                }
+                if (recommendationResult) {
+                    recommendationResult.style.display = 'block';
+                }
+                
+                const careerRecommendation = document.getElementById('careerRecommendation');
+                if (careerRecommendation) {
+                    let recommendationText = '';
+                    
+                    if (recommendation && recommendation.career_recommendations) {
+                        recommendationText = recommendation.career_recommendations;
+                    } else if (recommendation && recommendation.content) {
+                        recommendationText = recommendation.content;
+                    } else if (recommendation && typeof recommendation === 'string') {
+                        recommendationText = recommendation;
+                    } else {
+                        recommendationText = `
+                            <div class="career-item">
+                                <h4>🎨 예술 분야</h4>
+                                <p>${studentInfo.name}님의 창의적인 답변을 보니 예술 분야에 재능이 있어 보여요!</p>
+                            </div>
+                            <div class="career-item">
+                                <h4>🔬 과학 분야</h4>
+                                <p>호기심이 많고 탐구심이 강한 ${studentInfo.name}님께 추천드려요!</p>
+                            </div>
+                        `;
+                    }
+                    
+                    careerRecommendation.innerHTML = recommendationText;
+                }
+                
+                // 버튼 이벤트 핸들러 추가
+                const acceptButton = document.getElementById('acceptRecommendation');
+                const modifyButton = document.getElementById('modifyRecommendation');
+                
+                if (acceptButton) {
+                    acceptButton.onclick = () => acceptCareerRecommendation();
+                }
+                
+                if (modifyButton) {
+                    modifyButton.onclick = () => requestNewRecommendation();
+                }
+            }, 2000); // 2초 후 결과 표시
+        }
+        
+        // AI 추천 요청 함수
+        async function requestAIRecommendation() {
+            console.log('🤖 AI 진로 추천 요청');
+            
+            try {
+                showLoading(true);
+                
+                const response = await fetch(`${API_BASE_URL}/career/${sessionId}/recommend`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                console.log('🤖 AI 추천 응답:', data);
+                
+                if (data.success && data.data.career_recommendation) {
+                    // AI 추천 결과로 추천 화면 표시
+                    showRecommendationScreen({
+                        career_recommendations: data.data.career_recommendation,
+                        stage: 5
+                    });
+                } else {
+                    showError('AI 진로 추천을 받아오는데 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('❌ AI 추천 오류:', error);
+                showError('AI 진로 추천 서비스에 연결할 수 없습니다.');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // 새로운 진로 추천 요청 함수
+        async function requestNewRecommendation() {
+            console.log('🔄 새로운 진로 추천 요청');
+            
+            try {
+                // 로딩 상태 표시
+                const recommendationLoading = document.getElementById('recommendationLoading');
+                const recommendationResult = document.getElementById('recommendationResult');
+                
+                if (recommendationLoading) {
+                    recommendationLoading.style.display = 'block';
+                    recommendationLoading.querySelector('p').textContent = 'AI가 다른 진로를 찾고 있어요... 🔍✨';
+                }
+                if (recommendationResult) {
+                    recommendationResult.style.display = 'none';
+                }
+                
+                // API 호출 (새로운 추천 요청)
+                const response = await fetch(`${API_BASE_URL}/career/${sessionId}/recommend`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        regenerate: true // 새로운 추천 요청 플래그
+                    })
+                });
+                
+                const data = await response.json();
+                console.log('🔄 새로운 AI 추천 응답:', data);
+                
+                if (data.success && data.data.career_recommendation) {
+                    // 2초 후 새로운 추천 결과 표시
+                    setTimeout(() => {
+                        if (recommendationLoading) {
+                            recommendationLoading.style.display = 'none';
+                        }
+                        if (recommendationResult) {
+                            recommendationResult.style.display = 'block';
+                        }
+                        
+                        const careerRecommendation = document.getElementById('careerRecommendation');
+                        if (careerRecommendation) {
+                            careerRecommendation.innerHTML = data.data.career_recommendation;
+                        }
+                        
+                        // 버튼 이벤트 핸들러 다시 추가
+                        const acceptButton = document.getElementById('acceptRecommendation');
+                        const modifyButton = document.getElementById('modifyRecommendation');
+                        
+                        if (acceptButton) {
+                            acceptButton.onclick = () => acceptCareerRecommendation();
+                        }
+                        
+                        if (modifyButton) {
+                            modifyButton.onclick = () => requestNewRecommendation();
+                        }
+                    }, 2000);
+                } else {
+                    showError('새로운 진로 추천을 받아오는데 실패했습니다.');
+                    // 에러 시 원래 화면으로 복구
+                    if (recommendationLoading) {
+                        recommendationLoading.style.display = 'none';
+                    }
+                    if (recommendationResult) {
+                        recommendationResult.style.display = 'block';
+                    }
+                }
+            } catch (error) {
+                console.error('❌ 새로운 추천 요청 오류:', error);
+                showError('새로운 진로 추천 서비스에 연결할 수 없습니다.');
+                // 에러 시 원래 화면으로 복구
+                const recommendationLoading = document.getElementById('recommendationLoading');
+                const recommendationResult = document.getElementById('recommendationResult');
+                if (recommendationLoading) {
+                    recommendationLoading.style.display = 'none';
+                }
+                if (recommendationResult) {
+                    recommendationResult.style.display = 'block';
+                }
+            }
+        }
+        
+        // 진로 추천 수락 함수
+        async function acceptCareerRecommendation() {
+            console.log('👍 진로 추천 수락');
+            
+            try {
+                showLoading(true);
+                
+                const response = await fetch(`${API_BASE_URL}/career/${sessionId}/accept-recommendation`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                console.log('👍 추천 수락 응답:', data);
+                
+                if (data.success) {
+                    // 완료 화면으로 이동
+                    showScreen('completionScreen');
+                    updateProgress(5, true);
+                    
+                    // 완료 메시지 업데이트
+                    const completionTitle = document.getElementById('completionTitle');
+                    const completionMessage = document.getElementById('completionMessage');
+                    const finalCareer = document.getElementById('finalCareer');
+                    
+                    if (completionTitle && studentInfo) {
+                        completionTitle.textContent = `축하합니다, ${studentInfo.name}님! 🎉`;
+                    }
+                    
+                    if (completionMessage) {
+                        completionMessage.textContent = '진로가 확정되었습니다! 드림로직을 생성할 준비가 되었어요!';
+                    }
+                    
+                    if (finalCareer) {
+                        const careerText = document.getElementById('careerRecommendation')?.textContent || '선택한 진로';
+                        finalCareer.innerHTML = `
+                            <div class="final-career-card">
+                                <h3>🎯 확정된 진로</h3>
+                                <p>${careerText}</p>
+                            </div>
+                        `;
+                    }
+                    
+                    // 드림로직 버튼 이벤트 핸들러 추가
+                    const generateDreamLogicBtn = document.getElementById('generateDreamLogic');
+                    const restartJourneyBtn = document.getElementById('restartJourney');
+                    
+                    if (generateDreamLogicBtn) {
+                        generateDreamLogicBtn.onclick = () => generateDreamLogic();
+                    }
+                    
+                    if (restartJourneyBtn) {
+                        restartJourneyBtn.onclick = () => restartCareerJourney();
+                    }
+                } else {
+                    showError('진로 추천 수락에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('❌ 추천 수락 오류:', error);
+                showError('서버 연결에 실패했습니다.');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // 드림로직 생성 함수
+        async function generateDreamLogic() {
+            console.log('🌈 드림로직 생성 요청 시작');
+            console.log('현재 세션 ID:', sessionId);
+            console.log('학생 정보:', studentInfo);
+            
+            try {
+                // 드림로직 화면으로 전환
+                showScreen('dreamLogicScreen');
+                
+                // 로딩 표시
+                const dreamLogicLoading = document.getElementById('dreamLogicLoading');
+                const dreamLogicResult = document.getElementById('dreamLogicResult');
+                
+                console.log('로딩 엘리먼트:', dreamLogicLoading);
+                console.log('결과 엘리먼트:', dreamLogicResult);
+                
+                if (dreamLogicLoading) {
+                    dreamLogicLoading.style.display = 'block';
+                }
+                if (dreamLogicResult) {
+                    dreamLogicResult.style.display = 'none';
+                }
+                
+                // API 호출
+                const response = await fetch(`${API_BASE_URL}/career/${sessionId}/dream-logic`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                console.log('🌈 드림로직 응답 전체:', data);
+                console.log('드림로직 내용:', data.data?.dream_logic);
+                console.log('응답 성공 여부:', data.success);
+                
+                if (data.success && data.data && data.data.dream_logic) {
+                    // 3초 후 드림로직 결과 표시
+                    setTimeout(() => {
+                        if (dreamLogicLoading) {
+                            dreamLogicLoading.style.display = 'none';
+                        }
+                        if (dreamLogicResult) {
+                            dreamLogicResult.style.display = 'block';
+                        }
+                        
+                        const dreamSteps = document.getElementById('dreamSteps');
+                        if (dreamSteps) {
+                            // 드림로직 텍스트를 HTML로 변환하여 표시
+                            const formattedContent = formatDreamLogic(data.data.dream_logic);
+                            dreamSteps.innerHTML = formattedContent;
+                        }
+                        
+                        // formatDreamLogic 함수에서 자동으로 응원메모가 표시됨
+                        
+                        // 완료 버튼 표시
+                        const finishJourneyBtn = document.getElementById('finishJourney');
+                        if (finishJourneyBtn) {
+                            finishJourneyBtn.style.display = 'block';
+                            finishJourneyBtn.onclick = () => showFinalCompletion();
+                        }
+                        
+                        // PDF 다운로드 버튼 이벤트 추가
+                        const downloadPdfBtn = document.getElementById('downloadPdf');
+                        if (downloadPdfBtn) {
+                            downloadPdfBtn.onclick = () => downloadDreamLogicPdf();
+                        }
+                        
+                        // 드림로직 액션 버튼들 표시 및 이벤트 추가
+                        const dreamLogicActions = document.getElementById('dreamLogicActions');
+                        if (dreamLogicActions) {
+                            dreamLogicActions.style.display = 'block';
+                            
+                            // 드림로직 PDF 다운로드 버튼 이벤트
+                            const downloadDreamLogicPDFBtn = document.getElementById('downloadDreamLogicPDF');
+                            if (downloadDreamLogicPDFBtn) {
+                                downloadDreamLogicPDFBtn.onclick = () => downloadDreamLogicPDF();
+                            }
+                        }
+                    }, 3000);
+                } else {
+                    console.error('드림로직 응답 오류:', data);
+                    
+                    // 임시로 더미 데이터 표시 (디버깅용)
+                    const dummyDreamLogic = `[${studentInfo?.name || '학생'}의 드림 로직]
+최종꿈: 환경 문제를 해결하는 친환경 로봇 엔지니어
+
+[중간목표1] 메이킹·설계 역량 키우기
+• 실천활동1: 학교생활 - 과학 시간에 재활용 소재로 움직이는 장난감 만들기
+• 실천활동2: 개인 성장 - 레고로 기계 구조 따라 만들고 기록하기
+
+응원 메모: ${studentInfo?.name || '당신'}의 창의적인 생각과 끈기가 있다면 분명 멋진 꿈을 이룰 수 있어요! 😊💚`;
+                    
+                    setTimeout(() => {
+                        if (dreamLogicLoading) {
+                            dreamLogicLoading.style.display = 'none';
+                        }
+                        if (dreamLogicResult) {
+                            dreamLogicResult.style.display = 'block';
+                        }
+                        
+                        const dreamSteps = document.getElementById('dreamSteps');
+                        if (dreamSteps) {
+                            const formattedContent = formatDreamLogic(dummyDreamLogic);
+                            dreamSteps.innerHTML = formattedContent;
+                        }
+                        
+                        // formatDreamLogic 함수에서 자동으로 응원메모가 표시됨
+                        
+                        const finishJourneyBtn = document.getElementById('finishJourney');
+                        if (finishJourneyBtn) {
+                            finishJourneyBtn.style.display = 'block';
+                            finishJourneyBtn.onclick = () => showFinalCompletion();
+                        }
+                    }, 3000);
+                    
+                    // showError('드림로직 생성에 실패했습니다: ' + (data.message || '알 수 없는 오류'));
+                    // showScreen('completionScreen'); // 원래 화면으로 복구
+                }
+            } catch (error) {
+                console.error('❌ 드림로직 생성 오류:', error);
+                showError('드림로직 생성 서비스에 연결할 수 없습니다.');
+                showScreen('completionScreen'); // 원래 화면으로 복구
+            }
+        }
+        
+        // 드림로직 텍스트를 HTML로 포맷팅
+        function formatDreamLogic(dreamLogicText) {
+            console.log('🎨 드림로직 포맷팅 시작:', dreamLogicText);
+            console.log('🔍 응원메모 검색 중...');
+            
+            let formatted = '<div class="dream-logic-content">';
+            const lines = dreamLogicText.split('\n');
+            let currentSection = '';
+            let inSchoolActivity = false;
+            let inPersonalActivity = false;
+            let foundEncouragement = false;
+            let collectingEncouragement = false; // 응원메모 수집 중인지 플래그
+            let encouragementLines = []; // 응원메모 라인들 수집
+            
+            for (let line of lines) {
+                line = line.trim();
+                if (!line) continue;
+                
+                console.log('처리 중인 라인:', line);
+                
+                // 응원 메모 시작 감지
+                if (line.includes('응원') && (line.includes('메모') || line.includes('메시지') || line.includes(':'))) {
+                    console.log('🎯 응원메모 시작 라인 발견:', line);
+                    
+                    if (inSchoolActivity || inPersonalActivity) {
+                        formatted += '</ul></div>'; // 활동 컨테이너 닫기
+                        inSchoolActivity = false;
+                        inPersonalActivity = false;
+                    }
+                    
+                    collectingEncouragement = true;
+                    foundEncouragement = true;
+                    
+                    // 첫 라인에서 텍스트 추출 시도
+                    const patterns = [
+                        /응원\s*메모\s*[:：]\s*/i,
+                        /응원메모\s*[:：]\s*/i,
+                        /응원\s*메시지\s*[:：]\s*/i,
+                        /응원메시지\s*[:：]\s*/i
+                    ];
+                    
+                    let firstLineText = line;
+                    for (const pattern of patterns) {
+                        if (pattern.test(line)) {
+                            firstLineText = line.replace(pattern, '').trim();
+                            break;
+                        }
+                    }
+                    
+                    if (firstLineText) {
+                        encouragementLines.push(firstLineText);
+                    }
+                    
+                    continue; // 응원메모 처리는 별도로 하므로 다른 처리 건너뛰기
+                }
+                
+                // 응원메모 수집 중이면 다음 라인들도 응원메모로 수집
+                if (collectingEncouragement) {
+                    // 새로운 섹션이 시작되면 응원메모 수집 종료
+                    if (line.match(/^\[.+\]$/) || line.startsWith('최종꿈:') || line.startsWith('중간목표')) {
+                        collectingEncouragement = false;
+                        console.log('� 응원메모 수집 종료 - 새 섹션 시작');
+                    } else {
+                        encouragementLines.push(line);
+                        console.log('📝 응원메모 라인 수집:', line);
+                        continue; // 다른 처리 건너뛰기
+                    }
+                }
+                
+                // 나머지 드림로직 처리 (기존 로직과 동일)
+                // 드림로직 제목 (대괄호)
+                if (line.match(/^\[.+\]$/)) {
+                    formatted += `<h3>${line}</h3>`;
+                }
+                // 최종꿈
+                else if (line.startsWith('최종꿈:')) {
+                    const dream = line.replace('최종꿈:', '').trim();
+                    formatted += `<div class="final-dream"><strong>🌟 최종꿈:</strong> ${dream}</div>`;
+                }
+                // 중간목표 (대괄호로 시작)
+                else if (line.match(/^\[중간목표\d+\]/)) {
+                    if (inSchoolActivity || inPersonalActivity) {
+                        formatted += '</div>'; // 이전 활동 컨테이너 닫기
+                        inSchoolActivity = false;
+                        inPersonalActivity = false;
+                    }
+                    formatted += `<h4>${line}</h4>`;
+                    currentSection = 'goal';
+                }
+                // 실천활동1 (학교생활)
+                else if (line.includes('실천활동1') && (line.includes('학교생활') || line.includes('학교'))) {
+                    if (inPersonalActivity) {
+                        formatted += '</div>'; // 개인성장 컨테이너 닫기
+                        inPersonalActivity = false;
+                    }
+                    formatted += `<h5>실천활동1: 학교생활</h5>`;
+                    formatted += '<div class="activity-container"><ul>';
+                    inSchoolActivity = true;
+                    currentSection = 'school';
+                }
+                // 실천활동2 (개인성장)
+                else if (line.includes('실천활동2') && (line.includes('개인') || line.includes('성장'))) {
+                    if (inSchoolActivity) {
+                        formatted += '</ul></div>'; // 학교생활 컨테이너 닫기
+                        inSchoolActivity = false;
+                    }
+                    formatted += `<h5>실천활동2: 개인성장</h5>`;
+                    formatted += '<div class="activity-container"><ul>';
+                    inPersonalActivity = true;
+                    currentSection = 'personal';
+                }
+                // 번호가 있는 활동 리스트 (1., 2. 등)
+                else if (line.match(/^\d+\.\s/)) {
+                    if (currentSection === 'school') {
+                        formatted += `<li class="school-activity">${line}</li>`;
+                    } else if (currentSection === 'personal') {
+                        formatted += `<li class="personal-activity">${line}</li>`;
+                    } else {
+                        formatted += `<li>${line}</li>`;
+                    }
+                }
+                // 응원 메모는 위의 새로운 로직에서 처리됨
+                // 기타 텍스트
+                else if (line.length > 0) {
+                    // 중간목표 설명이나 기타 내용
+                    if (currentSection === 'goal' && !line.startsWith('•')) {
+                        formatted += `<p style="margin-left: 15px; color: #666; font-style: italic;">${line}</p>`;
+                    }
+                }
+            }
+            
+            // 마지막에 열린 컨테이너들 닫기
+            if (inSchoolActivity || inPersonalActivity) {
+                formatted += '</ul></div>';
+            }
+            
+            formatted += '</div>';
+            
+            // 수집된 응원메모 라인들을 합쳐서 저장
+            if (foundEncouragement && encouragementLines.length > 0) {
+                encouragementMessage = encouragementLines.join(' ').trim();
+                console.log('💝 최종 응원메모 조합 완료:', encouragementMessage);
+            }
+            
+            // 응원메모 발견 여부 확인
+            console.log('🔍 응원메모 발견 여부:', foundEncouragement);
+            console.log('💝 최종 저장된 응원메모:', encouragementMessage);
+            console.log('🎨 포맷팅 완료:', formatted);
+            
+            // 응원메모가 추출되었으면 즉시 드림로직 화면에 표시
+            if (foundEncouragement && encouragementMessage) {
+                setTimeout(() => {
+                    showEncouragementInDreamLogic();
+                }, 100);
+            }
+            
+            return formatted;
+        }
+        
+        // PDF 다운로드 함수
+        async function downloadDreamLogicPdf() {
+            console.log('📄 PDF 다운로드 요청');
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/career/${sessionId}/download-pdf`, {
+                    method: 'GET'
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${studentInfo.name}_드림로직.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                } else {
+                    showError('PDF 다운로드에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('❌ PDF 다운로드 오류:', error);
+                showError('PDF 다운로드 서비스에 연결할 수 없습니다.');
+            }
+        }
+        
+        // 드림로직 화면에 응원메모 표시하는 전용 함수
+        function showEncouragementInDreamLogic() {
+            console.log('🎯 showEncouragementInDreamLogic 호출됨');
+            console.log('💝 표시할 응원메시지:', encouragementMessage);
+            
+            const encouragementDiv = document.getElementById('encouragementMessage');
+            console.log('🔍 encouragementMessage 요소:', encouragementDiv);
+            
+            if (encouragementDiv && encouragementMessage && encouragementMessage.trim() !== '') {
+                encouragementDiv.innerHTML = `
+                    <div class="encouragement-card">
+                        <h3>💝 AI가 보내는 특별한 응원 메시지</h3>
+                        <p>${encouragementMessage}</p>
+                    </div>
+                `;
+                encouragementDiv.style.display = 'block';
+                console.log('✅ 응원메모 표시 완료!');
+            } else {
+                console.log('❌ 응원메모 표시 실패 - 요소나 메시지가 없음');
+                console.log('  - encouragementDiv:', !!encouragementDiv);
+                console.log('  - encouragementMessage:', encouragementMessage);
+            }
+        }
+        
+        // 여정 재시작 함수
+        function restartCareerJourney() {
+            console.log('🔄 진로 탐색 재시작');
+            
+            // 모든 데이터 초기화
+            sessionId = null;
+            studentInfo = null;
+            currentQuestionData = null;
+            selectedChoices = [];
+            encouragementMessage = null; // 응원메모도 초기화
+            
+            // 시작 화면으로 이동
+            showScreen('startScreen');
+            updateProgress(0);
+        }
+        
+        // 테스트용 응원메모 함수 (임시)
+        function testEncouragementMessage() {
+            console.log('🧪 응원메모 테스트 시작');
+            
+            // 임시 학생 정보 설정
+            studentInfo = { name: '테스트학생', grade: 5 };
+            
+            // 테스트용 드림로직 텍스트
+            const testDreamLogic = `[테스트학생의 드림 로직]
+최종꿈: 환경 문제를 해결하는 친환경 로봇 엔지니어
+
+[중간목표1] 메이킹·설계 역량 키우기
+• 실천활동1: 학교생활 - 과학 시간에 재활용 소재로 움직이는 장난감 만들기
+• 실천활동2: 개인 성장 - 레고로 기계 구조 따라 만들고 기록하기
+
+응원 메모: 테스트학생의 창의적인 생각과 끈기가 있다면 분명 멋진 꿈을 이룰 수 있어요! 😊💚`;
+            
+            // 1. 먼저 드림로직 화면 표시
+            showScreen('dreamLogicScreen');
+            
+            // 2. 드림로직 결과 표시 (응원메모는 추출만 됨)
+            setTimeout(() => {
+                const dreamLogicLoading = document.getElementById('dreamLogicLoading');
+                const dreamLogicResult = document.getElementById('dreamLogicResult');
+                
+                if (dreamLogicLoading) dreamLogicLoading.style.display = 'none';
+                if (dreamLogicResult) dreamLogicResult.style.display = 'block';
+                
+                const dreamSteps = document.getElementById('dreamSteps');
+                if (dreamSteps) {
+                    const formattedContent = formatDreamLogic(testDreamLogic);
+                    dreamSteps.innerHTML = formattedContent;
+                }
+                
+                // formatDreamLogic 함수에서 자동으로 응원메모가 표시됨
+                
+                // 3. 완료 버튼 표시
+                const finishJourneyBtn = document.getElementById('finishJourney');
+                if (finishJourneyBtn) {
+                    finishJourneyBtn.style.display = 'block';
+                    finishJourneyBtn.onclick = () => showFinalCompletion();
+                }
+            }, 1000);
+        }
+        
+        // 간단한 직접 테스트 함수
+        function testEncouragementDirect() {
+            console.log('🧪 직접 응원메모 테스트');
+            
+            // 응원메모 직접 설정
+            encouragementMessage = '테스트 응원메시지입니다! 화이팅! 😊💪';
+            
+            // 드림로직 화면으로 이동
+            showScreen('dreamLogicScreen');
+            
+            setTimeout(() => {
+                // 로딩 숨기고 결과 표시
+                const dreamLogicLoading = document.getElementById('dreamLogicLoading');
+                const dreamLogicResult = document.getElementById('dreamLogicResult');
+                
+                if (dreamLogicLoading) dreamLogicLoading.style.display = 'none';
+                if (dreamLogicResult) dreamLogicResult.style.display = 'block';
+                
+                // 응원메모 직접 표시
+                showEncouragementInDreamLogic();
+                
+                // 버튼 표시
+                const dreamLogicActions = document.getElementById('dreamLogicActions');
+                if (dreamLogicActions) {
+                    dreamLogicActions.style.display = 'block';
+                }
+            }, 500);
+        }
+        
+        // 최종 완료 화면 표시 함수 (응원메모 포함)
+        function showFinalCompletion() {
+            console.log('🎉 최종 완료 화면 표시');
+            console.log('💝 저장된 응원메모:', encouragementMessage);
+            
+            // 완료 화면으로 이동
+            showScreen('completionScreen');
+            updateProgress(5, true);
+            
+            // 완료 메시지 업데이트
+            const completionTitle = document.getElementById('completionTitle');
+            const completionMessage = document.getElementById('completionMessage');
+            
+            if (completionTitle && studentInfo) {
+                completionTitle.textContent = `수고했어요, ${studentInfo.name}님! 🎉`;
+            }
+            
+            if (completionMessage) {
+                completionMessage.textContent = '드림로직이 완성되었습니다! 꿈을 향한 첫걸음을 시작해보세요!';
+            }
+            
+            // 응원메모 표시 로직 강화
+            const finalEncouragement = document.getElementById('finalEncouragement');
+            const finalEncouragementText = document.getElementById('finalEncouragementText');
+            
+            console.log('🔍 HTML 요소 확인:', {
+                finalEncouragement: !!finalEncouragement,
+                finalEncouragementText: !!finalEncouragementText,
+                encouragementMessage: encouragementMessage
+            });
+            
+            if (finalEncouragement && finalEncouragementText) {
+                let messageToShow = encouragementMessage;
+                
+                // 응원메모가 없으면 기본 메시지 사용
+                if (!messageToShow || messageToShow.trim() === '') {
+                    messageToShow = `${studentInfo?.name || '여러분'}의 열정과 노력이 있다면 분명 멋진 꿈을 이룰 수 있을 거예요! 😊💪`;
+                    console.log('📝 기본 응원메시지 사용:', messageToShow);
+                }
+                
+                finalEncouragementText.textContent = messageToShow;
+                finalEncouragement.style.display = 'block';
+                
+                console.log('✅ 응원메모 설정 완료');
+                
+                // 애니메이션 효과를 위해 약간의 지연
+                setTimeout(() => {
+                    finalEncouragement.classList.add('show');
+                    console.log('🎭 애니메이션 클래스 추가됨');
+                }, 500);
+            } else {
+                console.error('❌ 응원메모 HTML 요소를 찾을 수 없음');
+            }
+            
+            // 버튼 이벤트 핸들러 설정
+            const restartJourneyBtn = document.getElementById('restartJourney');
+            if (restartJourneyBtn) {
+                restartJourneyBtn.onclick = () => restartCareerJourney();
+            }
+        }
+        
+        // 드림로직 PDF 다운로드 함수
+        async function downloadDreamLogicPDF() {
+            console.log('🔮 드림로직 PDF 다운로드 시작');
+            
+            if (!studentInfo || !sessionId) {
+                showError('학생 정보가 없습니다. 다시 시작해주세요.');
+                return;
+            }
+            
+            try {
+                showLoading(true);
+                
+                // 세션 데이터 조회
+                const sessionResponse = await fetch(`${API_BASE_URL}/career/${sessionId}/data`);
+                const sessionData = await sessionResponse.json();
+                
+                if (!sessionData.success) {
+                    throw new Error('세션 데이터를 가져올 수 없습니다.');
+                }
+                
+                const responses = sessionData.data.responses;
+                const finalRecommendation = sessionData.data.final_recommendation || '진로 추천 정보 없음';
+                
+                // 드림로직 결과 가져오기 (현재 화면에서)
+                const dreamLogicElement = document.getElementById('dreamSteps');
+                const dreamLogicResult = dreamLogicElement ? dreamLogicElement.innerText : '';
+                
+                // PDF 다운로드 요청
+                const pdfResponse = await fetch(`${API_BASE_URL}/career/download-pdf`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        student_name: studentInfo.name,
+                        responses: responses,
+                        final_recommendation: finalRecommendation,
+                        dream_logic_result: dreamLogicResult,
+                        encouragement_message: encouragementMessage || '' // 응원메시지 추가
+                    })
+                });
+                
+                if (!pdfResponse.ok) {
+                    throw new Error('PDF 생성에 실패했습니다.');
+                }
+                
+                // PDF 파일 다운로드
+                const blob = await pdfResponse.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                
+                // 파일명 설정
+                const timestamp = new Date().toISOString().slice(0, 19).replace(/[-:]/g, '').replace('T', '_');
+                a.download = `${studentInfo.name}_드림로직_진로탐색결과_${timestamp}.pdf`;
+                
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                console.log('✅ 드림로직 PDF 다운로드 완료');
+                
+            } catch (error) {
+                console.error('❌ 드림로직 PDF 다운로드 오류:', error);
+                showError(`드림로직 PDF 다운로드에 실패했습니다: ${error.message}`);
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // 스크린샷 PDF 다운로드 함수
+        async function downloadDreamLogicScreenshotPDF() {
+            console.log('📸 스크린샷 PDF 다운로드 시작');
+            
+            if (!studentInfo || !sessionId) {
+                showError('학생 정보가 없습니다. 다시 시작해주세요.');
+                return;
+            }
+            
+            try {
+                showLoading(true);
+                
+                // 세션 데이터 조회
+                const sessionResponse = await fetch(`${API_BASE_URL}/career/${sessionId}/data`);
+                const sessionData = await sessionResponse.json();
+                
+                if (!sessionData.success) {
+                    throw new Error('세션 데이터를 가져올 수 없습니다.');
+                }
+                
+                const responses = sessionData.data.responses;
+                const finalRecommendation = sessionData.data.final_recommendation || '진로 추천 정보 없음';
+                
+                // 드림로직 결과 가져오기 (현재 화면에서)
+                const dreamLogicElement = document.getElementById('dreamSteps');
+                const dreamLogicResult = dreamLogicElement ? dreamLogicElement.innerText : '';
+                
+                // 스크린샷 PDF 다운로드 요청
+                const pdfResponse = await fetch(`${API_BASE_URL}/career/download-pdf-screenshot`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        student_name: studentInfo.name,
+                        responses: responses,
+                        final_recommendation: finalRecommendation,
+                        dream_logic_result: dreamLogicResult,
+                        encouragement_message: encouragementMessage || '' // 응원메시지 추가
+                    })
+                });
+                
+                if (!pdfResponse.ok) {
+                    throw new Error('스크린샷 PDF 생성에 실패했습니다.');
+                }
+                
+                // PDF 파일 다운로드
+                const blob = await pdfResponse.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${studentInfo.name}_드림로직_스크린샷.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                
+                console.log('✅ 스크린샷 PDF 다운로드 성공');
+                
+            } catch (error) {
+                console.error('❌ 스크린샷 PDF 다운로드 오류:', error);
+        }
+        
+        // 오류 표시 함수
+        function showError(message) {
+            console.error('❌ 오류:', message);
+            alert(`❌ ${message}`);
+        }
+        
+        console.log('🚀 인라인 JavaScript 로드 완료');
+    </script>
+</body>
+</html>
+</html>

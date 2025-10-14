@@ -1,0 +1,734 @@
+/* 중학생 진로 탐색 앱 스타일시트 */
+
+/* 기본 설정 및 변수 */
+:root {
+    --primary-color: #4CAF50;
+    --secondary-color: #2196F3;
+    --accent-color: #FF9800;
+    --success-color: #8BC34A;
+    --danger-color: #F44336;
+    --warning-color: #FFC107;
+    --info-color: #00BCD4;
+    
+    --text-primary: #212121;
+    --text-secondary: #757575;
+    --background-light: #FAFAFA;
+    --background-white: #FFFFFF;
+    --border-light: #E0E0E0;
+    --shadow-light: rgba(0, 0, 0, 0.1);
+    
+    --border-radius: 12px;
+    --transition: all 0.3s ease;
+    --max-width: 800px;
+}
+
+/* 글로벌 스타일 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', '맑은 고딕', sans-serif;
+    line-height: 1.6;
+    color: var(--text-primary);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    background: var(--background-white);
+    border-radius: var(--border-radius);
+    box-shadow: 0 10px 30px var(--shadow-light);
+    overflow: hidden;
+    min-height: calc(100vh - 40px);
+}
+
+/* 헤더 스타일 */
+.header {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    text-align: center;
+    padding: 30px 20px;
+}
+
+.header h1 {
+    font-size: 2rem;
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.header .subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    font-weight: 300;
+}
+
+/* 진행률 표시 */
+.progress-container {
+    padding: 20px;
+    background: var(--background-light);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--border-light);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    width: 0%;
+}
+
+.progress-text {
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* 메인 컨텐츠 */
+.main-content {
+    min-height: 400px;
+    padding: 40px 20px;
+}
+
+/* 공통 카드 스타일 */
+.welcome-card,
+.question-card,
+.completion-card {
+    background: var(--background-white);
+    border-radius: var(--border-radius);
+    padding: 40px;
+    text-align: center;
+    box-shadow: 0 4px 20px var(--shadow-light);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.question-card {
+    text-align: left;
+}
+
+/* 이모지 스타일 */
+.emoji-large {
+    font-size: 4rem;
+    margin-bottom: 20px;
+}
+
+.emoji-medium {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+/* 버튼 스타일 */
+.btn {
+    border: none;
+    border-radius: var(--border-radius);
+    padding: 12px 24px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+    display: inline-block;
+    margin: 5px;
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.btn-secondary {
+    background: var(--secondary-color);
+    color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: #1976D2;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+}
+
+.btn-success {
+    background: var(--success-color);
+    color: white;
+}
+
+.btn-success:hover:not(:disabled) {
+    background: #7CB342;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(139, 195, 74, 0.3);
+}
+
+.btn-large {
+    padding: 18px 36px;
+    font-size: 1.2rem;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* 입력 필드 스타일 */
+.input-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.input-group input[type="text"] {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--border-light);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    transition: var(--transition);
+}
+
+.input-group input[type="text"]:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+}
+
+/* 학년 선택 스타일 */
+.grade-options {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.grade-option {
+    border: 2px solid var(--border-light);
+    border-radius: var(--border-radius);
+    padding: 15px 20px;
+    cursor: pointer;
+    transition: var(--transition);
+    min-width: 120px;
+    text-align: center;
+}
+
+.grade-option:hover {
+    border-color: var(--primary-color);
+    background: rgba(76, 175, 80, 0.05);
+}
+
+.grade-option.selected {
+    border-color: var(--primary-color);
+    background: var(--primary-color);
+    color: white;
+}
+
+.grade-option input[type="checkbox"] {
+    display: none;
+}
+
+.grade-option label {
+    cursor: pointer;
+    font-weight: 600;
+    margin: 0;
+}
+
+/* 선택지 스타일 */
+.choices-container {
+    margin: 20px 0;
+}
+
+.choice-item {
+    border: 2px solid var(--border-light);
+    border-radius: var(--border-radius);
+    padding: 15px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+}
+
+.choice-item:hover {
+    border-color: var(--secondary-color);
+    background: rgba(33, 150, 243, 0.05);
+}
+
+.choice-item.selected {
+    border-color: var(--secondary-color);
+    background: var(--secondary-color);
+    color: white;
+}
+
+.choice-item input[type="checkbox"],
+.choice-item input[type="radio"] {
+    margin-right: 12px;
+    transform: scale(1.2);
+}
+
+.choice-item label {
+    cursor: pointer;
+    flex: 1;
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* 커스텀 답변 입력 */
+.custom-answer-container {
+    margin: 20px 0;
+    padding: 20px;
+    background: var(--background-light);
+    border-radius: var(--border-radius);
+    border: 2px solid var(--info-color);
+}
+
+.custom-answer-container label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: var(--info-color);
+}
+
+.custom-answer-container textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 80px;
+}
+
+.custom-answer-container textarea:focus {
+    outline: none;
+    border-color: var(--info-color);
+    box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.1);
+}
+
+/* 응원 메시지 */
+.encouragement {
+    background: linear-gradient(135deg, var(--accent-color), var(--warning-color));
+    color: white;
+    padding: 15px 20px;
+    border-radius: var(--border-radius);
+    margin: 20px 0;
+    text-align: center;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(255, 152, 0, 0.2);
+}
+
+/* 추천 결과 스타일 */
+.recommendation-card {
+    background: var(--background-light);
+    border-radius: var(--border-radius);
+    padding: 25px;
+    margin: 20px 0;
+    border-left: 5px solid var(--primary-color);
+}
+
+.recommendation-card h3 {
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+}
+
+.career-recommendation {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid var(--border-light);
+}
+
+/* 수정 요청 컨테이너 */
+.modification-container {
+    margin-top: 20px;
+    padding: 20px;
+    background: var(--background-light);
+    border-radius: var(--border-radius);
+    border: 2px solid var(--warning-color);
+}
+
+.modification-container label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.modification-container textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 80px;
+}
+
+.modification-buttons {
+    margin-top: 15px;
+    text-align: center;
+}
+
+/* 드림로직 스타일 */
+.dream-logic-content {
+    text-align: left;
+    line-height: 1.6;
+}
+
+.dream-logic-content h3 {
+    color: var(--primary-color);
+    margin: 20px 0 10px 0;
+    font-size: 1.3rem;
+}
+
+.dream-logic-content h4 {
+    color: var(--secondary-color);
+    margin: 15px 0 8px 0;
+    font-size: 1.1rem;
+}
+
+.dream-logic-content h5 {
+    color: var(--text-primary);
+    margin: 12px 0 6px 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.final-dream {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 20px;
+    border-radius: var(--border-radius);
+    margin: 20px 0;
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.activity-container {
+    margin: 10px 0;
+    padding: 15px;
+    background: var(--background-light);
+    border-radius: 8px;
+}
+
+.activity-container ul {
+    list-style: none;
+    padding: 0;
+}
+
+.activity-container li {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.activity-container li:last-child {
+    border-bottom: none;
+}
+
+.school-activity {
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+.personal-activity {
+    color: var(--secondary-color);
+    font-weight: 500;
+}
+
+/* 응원 메시지 카드 */
+.encouragement-card {
+    background: linear-gradient(135deg, #ff9a9e, #fecfef);
+    padding: 25px;
+    border-radius: var(--border-radius);
+    margin: 20px 0;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(255, 154, 158, 0.3);
+}
+
+.encouragement-card h3 {
+    color: white;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+}
+
+.encouragement-card p {
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+/* 액션 버튼 그룹 */
+.action-buttons {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.action-buttons .btn {
+    margin: 8px;
+    min-width: 180px;
+}
+
+/* 로딩 스타일 */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    color: white;
+}
+
+.recommendation-loading,
+.dream-logic-loading {
+    text-align: center;
+    padding: 40px;
+}
+
+.spinner {
+    border: 4px solid var(--border-light);
+    border-top: 4px solid var(--primary-color);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 수정 옵션 스타일 */
+.modification-options {
+    text-align: center;
+    padding: 20px;
+}
+
+.options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin: 30px 0;
+}
+
+.modification-option {
+    background: white;
+    border: 2px solid var(--border-light);
+    border-radius: 12px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+}
+
+.modification-option:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.15);
+    transform: translateY(-2px);
+}
+
+.modification-option h4 {
+    color: var(--primary-color);
+    margin: 0 0 10px 0;
+    font-size: 1.1em;
+}
+
+.modification-option p {
+    color: var(--text-muted);
+    margin: 0 0 15px 0;
+    font-size: 0.9em;
+}
+
+.current-answer {
+    background: var(--bg-light);
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 0.85em;
+}
+
+.current-answer strong {
+    color: var(--text-dark);
+    display: block;
+    margin-bottom: 5px;
+}
+
+.modification-notice {
+    margin-bottom: 20px;
+}
+
+.alert {
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.alert-info {
+    background-color: #e7f3ff;
+    border: 1px solid #b3d9ff;
+    color: #0c5aa6;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    
+    .container {
+        min-height: calc(100vh - 20px);
+    }
+    
+    .header h1 {
+        font-size: 1.6rem;
+    }
+    
+    .header .subtitle {
+        font-size: 1rem;
+    }
+    
+    .welcome-card,
+    .question-card,
+    .completion-card {
+        padding: 25px;
+    }
+    
+    .main-content {
+        padding: 20px 15px;
+    }
+    
+    .grade-options {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .grade-option {
+        width: 100%;
+        max-width: 200px;
+    }
+    
+    .action-buttons .btn {
+        width: 100%;
+        margin: 5px 0;
+    }
+    
+    .btn-large {
+        padding: 15px 25px;
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .header {
+        padding: 20px 15px;
+    }
+    
+    .welcome-card,
+    .question-card,
+    .completion-card {
+        padding: 20px;
+    }
+    
+    .emoji-large {
+        font-size: 3rem;
+    }
+    
+    .emoji-medium {
+        font-size: 2rem;
+    }
+    
+    .choice-item {
+        padding: 12px;
+        font-size: 0.9rem;
+    }
+}
+
+/* 애니메이션 효과 */
+.welcome-card,
+.question-card,
+.completion-card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.choice-item {
+    animation: fadeInLeft 0.4s ease-out;
+}
+
+@keyframes fadeInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* 상태별 스타일 */
+.screen-transition {
+    transition: opacity 0.3s ease-in-out;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.show {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}

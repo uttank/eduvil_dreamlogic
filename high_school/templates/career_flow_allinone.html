@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>드림로직</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/high_school/static/style.css">
+    <style>
+        body { 
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; 
+            background: #f7f8fa; 
+            margin: 0; 
+            line-height: 1.6;
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 20px auto; 
+            background: #fff; 
+            border-radius: 16px; 
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08); 
+            padding: 32px 24px; 
+        }
+        .step-indicator { 
+            font-size: 1.1em; 
+            color: #555; 
+            margin-bottom: 8px; 
+            font-weight: 600;
+        }
+        .progress-bar-bg { 
+            background: #e0e4ea; 
+            border-radius: 8px; 
+            height: 10px; 
+            margin-bottom: 16px; 
+        }
+        .progress-bar { 
+            background: linear-gradient(90deg, #4f8cff, #2563eb); 
+            height: 10px; 
+            border-radius: 8px; 
+            transition: width 0.4s ease-in-out; 
+        }
+        .chatbot-message { 
+            background: linear-gradient(135deg, #f0f6ff, #e6f2ff); 
+            border-left: 4px solid #4f8cff; 
+            padding: 16px 20px; 
+            border-radius: 12px; 
+            margin-bottom: 20px; 
+            color: #234; 
+            box-shadow: 0 2px 8px rgba(79, 140, 255, 0.1);
+        }
+        .result-box { 
+            background: linear-gradient(135deg, #fafbfc, #f1f5f9); 
+            border: 2px solid #e8edf5; 
+            border-radius: 16px; 
+            padding: 24px; 
+            margin: 24px 0; 
+            font-size: 1.1em; 
+            line-height: 1.8;
+            color: #2d3748;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            hyphens: auto;
+            max-width: 100%;
+            box-sizing: border-box;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            font-family: 'Noto Sans KR', monospace;
+        }
+        .result-box pre { 
+            margin: 0; 
+            background: none; 
+            border: none; 
+            padding: 0; 
+            font-size: 1em; 
+            white-space: pre-wrap; 
+            word-break: break-word;
+            font-family: inherit;
+            line-height: 1.8;
+            tab-size: 4;
+            overflow-x: auto;
+        }
+        .result-box h3 {
+            color: #1a365d;
+            font-size: 1.1em;
+            margin: 16px 0 8px 0;
+            font-weight: 600;
+        }
+        .result-box ul {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+        .result-box li {
+            margin: 6px 0;
+            line-height: 1.6;
+        }
+        .summary-section {
+            background: #f8fafc;
+            border-left: 4px solid #38a169;
+            padding: 16px;
+            margin: 16px 0;
+            border-radius: 8px;
+        }
+        .summary-title {
+            font-weight: 700;
+            color: #1a365d;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+        .summary-content {
+            color: #4a5568;
+            line-height: 1.7;
+        }
+        .error { 
+            color: #e53e3e; 
+            font-weight: 600; 
+            margin-bottom: 12px; 
+            padding: 12px;
+            background: #fed7d7;
+            border-radius: 8px;
+            border-left: 4px solid #e53e3e;
+        }
+        .form-group { 
+            margin-bottom: 20px; 
+        }
+        input[type=text], select, textarea { 
+            width: 100%; 
+            padding: 12px 16px; 
+            border: 2px solid #e2e8f0; 
+            border-radius: 8px; 
+            font-size: 1em; 
+            margin-top: 8px; 
+            transition: border-color 0.2s;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+        input[type=text]:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #4f8cff;
+            box-shadow: 0 0 0 3px rgba(79, 140, 255, 0.1);
+        }
+        button, input[type=submit] { 
+            background: linear-gradient(135deg, #4f8cff, #2563eb); 
+            color: #fff; 
+            border: none; 
+            border-radius: 8px; 
+            padding: 12px 24px; 
+            font-size: 1em; 
+            cursor: pointer; 
+            margin-right: 8px; 
+            margin-top: 8px; 
+            transition: all 0.2s ease;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(79, 140, 255, 0.2);
+        }
+        button:hover, input[type=submit]:hover { 
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(79, 140, 255, 0.3);
+        }
+        .regenerate-btn {
+            background: linear-gradient(135deg, #f56565, #e53e3e) !important;
+            box-shadow: 0 2px 4px rgba(245, 101, 101, 0.2) !important;
+        }
+        .regenerate-btn:hover {
+            background: linear-gradient(135deg, #e53e3e, #c53030) !important;
+            box-shadow: 0 4px 8px rgba(245, 101, 101, 0.3) !important;
+        }
+        .pdf-download-btn:hover {
+            background: linear-gradient(135deg, #059669, #047857) !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3) !important;
+        }
+        .button-container {
+            flex-wrap: wrap;
+        }
+        @media (max-width: 600px) {
+            .button-container {
+                flex-direction: column;
+                gap: 8px !important;
+            }
+            .pdf-download-btn {
+                width: 100%;
+            }
+        }
+        .restart-btn {
+            background: linear-gradient(135deg, #48bb78, #38a169, #2f855a) !important;
+            text-decoration: none !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            box-shadow: 0 4px 12px rgba(56, 161, 105, 0.3) !important;
+            transition: all 0.3s ease !important;
+            border: none !important;
+            color: white !important;
+            font-weight: 600 !important;
+        }
+        .restart-btn:hover {
+            background: linear-gradient(135deg, #38a169, #2f855a, #276749) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(56, 161, 105, 0.4) !important;
+        }
+        .hidden { 
+            display: none; 
+        }
+        .divider { 
+            border-top: 1px solid #e2e8f0; 
+            margin: 32px 0 20px 0; 
+        }
+        .step-title { 
+            font-size: 1.3em; 
+            font-weight: 700; 
+            margin-bottom: 16px; 
+            color: #1a365d; 
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 8px;
+        }
+        .step-time { 
+            color: #718096; 
+            font-size: 0.95em; 
+            margin-bottom: 6px; 
+            float: right; 
+        }
+        .spinner-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,255,255,0.8);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(2px);
+        }
+        .spinner {
+            border: 6px solid #e2e8f0;
+            border-top: 6px solid #4f8cff;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 20px 16px;
+                max-width: none;
+            }
+            .step-title {
+                font-size: 1.2em;
+            }
+            .result-box {
+                padding: 16px;
+                font-size: 0.95em;
+            }
+            button, input[type=submit] {
+                padding: 10px 20px;
+                font-size: 0.95em;
+            }
+        }
+        
+        /* 텍스트 강조 스타일 */
+        .highlight {
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        
+        /* 목록 스타일 개선 */
+        .choice-list {
+            list-style: none;
+            padding: 0;
+            margin: 12px 0;
+        }
+        .choice-item {
+            display: block !important;
+            background: #f8fafc;
+            margin: 8px 0;
+            padding: 16px;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            box-sizing: border-box;
+        }
+        .choice-item:hover {
+            border-color: #4f8cff;
+            background: #f0f6ff;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(79, 140, 255, 0.1);
+        }
+        .choice-item input[type="checkbox"],
+        .choice-item input[type="radio"] {
+            margin-right: 12px;
+            width: 18px;
+            height: 18px;
+        }
+        .choice-label {
+            font-weight: 600;
+            color: #1a365d;
+            font-size: 1.05em;
+        }
+        .choice-description {
+            color: #4a5568;
+            font-size: 0.95em;
+            display: block;
+            margin-top: 4px;
+            margin-left: 30px;
+        }
+        .choice-item input:checked + .choice-label {
+            color: #4f8cff;
+        }
+        .choice-item:has(input:checked) {
+            border-color: #4f8cff;
+            background: #f0f6ff;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="step-indicator">
+        단계 {{ step }} / 7
+    </div>
+    {% set progress = (step|int * 100) // 7 %}
+    <div class="progress-bar-bg">
+        <div class="progress-bar" style="width: {{ progress }}%"></div>
+    </div>
+    {% if chatbot_message %}
+        <div class="chatbot-message">{{ chatbot_message }}</div>
+    {% endif %}
+    {% if error %}
+        <div class="error">{{ error }}</div>
+    {% endif %}
+    <form method="post" id="career-form">
+        <input type="hidden" name="step" value="{{ step }}">
+        <input type="hidden" name="start_time" value="{{ start_time }}">
+        <input type="hidden" name="step_start_time" value="{{ step_start_time }}">
+        {# 단계별 폼 #}
+        {% if step == 1 %}
+            <div style="text-align: center; margin-bottom: 32px; padding: 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; color: white; box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);">
+                <h1 style="margin: 0; font-size: 1.8em; font-weight: 700; line-height: 1.4; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                    🎓 고등학생의 체계적 진로 설계를 위한<br>전문 시스템
+                </h1>
+                <p style="margin: 16px 0 0 0; font-size: 1.1em; opacity: 0.9; font-weight: 400;">
+                    당신의 꿈을 체계적으로 설계해보세요
+                </p>
+            </div>
+            
+            <div class="form-group">
+                <label for="career" class="step-title">1단계: 원하는 직업을 입력하세요</label>
+                <input type="text" id="career" name="career" required placeholder="예: 건축가, 데이터 과학자 등" value="{{ career|default('') }}">
+            </div>
+            <input type="submit" value="다음">
+        {% elif step == 2 %}
+            <div class="form-group">
+                <div class="step-title">2단계: 직업을 선택한 이유를 모두 선택하세요</div>
+                <div class="choice-list">
+                    {% for choice in choices %}
+                        <label class="choice-item">
+                            <input type="checkbox" name="reasons" value="{{ choice.label }}" {% if reasons and choice.label in reasons %}checked{% endif %}>
+                            <span class="choice-label">{{ choice.label }}</span>
+                            <span class="choice-description">{{ choice.description }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+            </div>
+            <input type="hidden" name="career" value="{{ career }}">
+            <input type="submit" value="다음">
+        {% elif step == 3 %}
+            <div class="form-group">
+                <div class="step-title">3단계: 관심 있는 이슈를 모두 선택하세요</div>
+                <div class="choice-list">
+                    {% for issue_item in issues %}
+                        <label class="choice-item">
+                            <input type="checkbox" name="issues" value="{{ issue_item }}" {% if issues_selected and issue_item in issues_selected %}checked{% endif %}>
+                            <span class="choice-label">{{ issue_item }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+            </div>
+            <input type="hidden" name="career" value="{{ career }}">
+            {% for r in reasons %}<input type="hidden" name="reasons" value="{{ r }}">{% endfor %}
+            {% for issue_item in issues %}<input type="hidden" name="current_issues" value="{{ issue_item }}">{% endfor %}
+            <button type="submit" name="regenerate" value="yes" class="regenerate-btn">다시 생성</button>
+            <input type="submit" value="다음">
+        {% elif step == 4 %}
+            <div class="form-group">
+                <div class="step-title">4단계: 탐구 주제를 선택하세요</div>
+                <div class="choice-list">
+                    {% for topic_item in topics %}
+                        <label class="choice-item">
+                            <input type="radio" name="topic" value="{{ topic_item }}" {% if topic == topic_item %}checked{% endif %} required>
+                            <span class="choice-label">{{ topic_item }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+            </div>
+            <input type="hidden" name="career" value="{{ career }}">
+            {% for r in reasons %}<input type="hidden" name="reasons" value="{{ r }}">{% endfor %}
+            {% for i in issues_selected %}<input type="hidden" name="issues_selected" value="{{ i }}">{% endfor %}
+            {% for topic_item in topics %}<input type="hidden" name="current_topics" value="{{ topic_item }}">{% endfor %}
+            <button type="submit" name="regenerate" value="yes" class="regenerate-btn">다시 생성</button>
+            <input type="submit" value="다음">
+        {% elif step == 5 %}
+            <div class="form-group">
+                <div class="step-title">5단계: 최종 목표</div>
+                <div class="result-box">{{ suggested_goal }}</div>
+                <input type="hidden" name="suggested_goal" value="{{ suggested_goal }}">
+                <input type="hidden" name="current_goal" value="{{ suggested_goal }}">
+            </div>
+            <input type="hidden" name="career" value="{{ career }}">
+            {% for r in reasons %}<input type="hidden" name="reasons" value="{{ r }}">{% endfor %}
+            {% for i in issues_selected %}<input type="hidden" name="issues_selected" value="{{ i }}">{% endfor %}
+            <input type="hidden" name="topic" value="{{ topic }}">
+            <button type="submit" name="regenerate" value="yes" class="regenerate-btn">다시 생성</button>
+            <input type="submit" value="다음">
+        {% elif step == 6 %}
+            <div class="form-group">
+                <div class="step-title">6단계:  중간 목표</div>
+                <div class="result-box">{% for m in midgoals %}• {{ m }}<br>{% endfor %}</div>
+            </div>
+            <input type="hidden" name="career" value="{{ career }}">
+            {% for r in reasons %}<input type="hidden" name="reasons" value="{{ r }}">{% endfor %}
+            {% for i in issues_selected %}<input type="hidden" name="issues_selected" value="{{ i }}">{% endfor %}
+            <input type="hidden" name="topic" value="{{ topic }}">
+            <input type="hidden" name="goal" value="{{ goal }}">
+            {% for m in midgoals %}<input type="hidden" name="midgoals" value="{{ m }}">{% endfor %}
+            {% for m in midgoals %}<input type="hidden" name="current_midgoals" value="{{ m }}">{% endfor %}
+            <button type="submit" name="regenerate" value="yes" class="regenerate-btn">다시 생성</button>
+            <input type="submit" value="다음">
+                {% elif step == 7 %}
+            <div class="form-group">
+                <div class="step-title">7단계: 드림로직 최종 통합 정리</div>
+                {% if final_summary %}
+                <div class="result-box">
+                    <pre>{{ final_summary }}</pre>
+                </div>
+                {% endif %}
+            </div>
+            <input type="hidden" name="career" value="{{ career }}">
+            {% for reason in reasons %}
+            <input type="hidden" name="reasons" value="{{ reason }}">
+            {% endfor %}
+            {% for issue in issues_selected %}
+            <input type="hidden" name="issues_selected" value="{{ issue }}">
+            {% endfor %}
+            <input type="hidden" name="topic" value="{{ topic }}">
+            <input type="hidden" name="goal" value="{{ goal }}">
+            {% for midgoal in midgoals %}
+            <input type="hidden" name="midgoals" value="{{ midgoal }}">
+            {% endfor %}
+            <input type="hidden" name="final_summary" value="{{ final_summary }}">
+            <input type="hidden" name="current_summary" value="{{ final_summary }}">
+            <div class="button-container" style="display: flex; gap: 12px; align-items: center; justify-content: center; margin-top: 20px;">
+                <button type="submit" name="regenerate" value="yes" class="regenerate-btn">다시 생성</button>
+                <button type="button" onclick="downloadPDF()" class="pdf-download-btn" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 1em; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);">📄 PDF 다운로드</button>
+            </div>
+            <div style="text-align:center; margin-top:32px; padding: 20px; background: linear-gradient(135deg, #f8fafc, #e2e8f0); border-radius: 16px; border: 2px solid #e2e8f0;">
+                <p style="margin-bottom: 16px; color: #4a5568; font-size: 1.1em; font-weight: 500;">✨ 드림로직을 완료했습니다! ✨</p>
+                <a href="/" class="restart-btn" style="padding: 14px 32px; font-size: 1.1em; font-weight: 600; border-radius: 12px; display: inline-flex; align-items: center; gap: 8px;">
+                    🏠 홈페이지로 이동 !
+                </a>
+            </div>
+        {% endif %}
+    </form>
+    <div class="divider"></div>
+    <div style="text-align:center; color:#aaa; font-size:0.95em; margin-top:18px;">© 2025 드림로직</div>
+</div>
+<div id="spinner-overlay" class="spinner-overlay" style="display:none;">
+    <div class="spinner"></div>
+</div>
+<script>
+// 폼 제출 시 모래시계(스피너) 표시
+const form = document.getElementById('career-form');
+const spinner = document.getElementById('spinner-overlay');
+if (form && spinner) {
+    form.addEventListener('submit', function() {
+        spinner.style.display = 'flex';
+    });
+    window.addEventListener('pageshow', function() {
+        spinner.style.display = 'none';
+    });
+}
+
+// PDF 다운로드 함수
+function downloadPDF() {
+    // 현재 폼의 모든 데이터를 수집
+    const formData = new FormData();
+    
+    // hidden input에서 데이터 수집
+    const career = document.querySelector('input[name="career"]').value;
+    const reasons = Array.from(document.querySelectorAll('input[name="reasons"]')).map(input => input.value);
+    const issuesSelected = Array.from(document.querySelectorAll('input[name="issues_selected"]')).map(input => input.value);
+    const topic = document.querySelector('input[name="topic"]').value;
+    const goal = document.querySelector('input[name="goal"]').value;
+    const midgoals = Array.from(document.querySelectorAll('input[name="midgoals"]')).map(input => input.value);
+    const finalSummary = document.querySelector('input[name="final_summary"]').value;
+    
+    // FormData에 추가
+    formData.append('career', career);
+    reasons.forEach(reason => formData.append('reasons', reason));
+    issuesSelected.forEach(issue => formData.append('issues_selected', issue));
+    formData.append('topic', topic);
+    formData.append('goal', goal);
+    midgoals.forEach(midgoal => formData.append('midgoals', midgoal));
+    formData.append('final_summary', finalSummary);
+    
+    // 스피너 표시
+    spinner.style.display = 'flex';
+    
+    // PDF 다운로드 요청
+    fetch('/high_school/career/download-pdf', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('PDF 생성에 실패했습니다.');
+        }
+        
+        // 서버에서 제공하는 파일명 추출
+        let filename = 'dreamlogic_career_report.pdf'; // 기본값
+        const contentDisposition = response.headers.get('Content-Disposition');
+        if (contentDisposition) {
+            // UTF-8 인코딩된 한글 파일명 우선 처리
+            const utf8FilenameMatch = contentDisposition.match(/filename\*=UTF-8''([^;]+)/);
+            if (utf8FilenameMatch) {
+                try {
+                    filename = decodeURIComponent(utf8FilenameMatch[1]);
+                } catch (e) {
+                    // UTF-8 파일명 디코딩 실패 시 영어 파일명 사용
+                }
+            } else {
+                // 일반 영어 파일명 처리
+                const filenameMatch = contentDisposition.match(/filename="([^"]+)"/);
+                if (filenameMatch) {
+                    filename = filenameMatch[1];
+                }
+            }
+        }
+        
+        return response.blob().then(blob => ({ blob, filename }));
+    })
+    .then(({ blob, filename }) => {
+        // 파일 다운로드
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        
+        // 서버에서 제공한 파일명 사용
+        a.download = filename;
+        
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        // 스피너 숨기기
+        spinner.style.display = 'none';
+        
+        // 성공 메시지
+        alert('PDF 다운로드가 완료되었습니다! 📄');
+    })
+    .catch(error => {
+        console.error('PDF 다운로드 오류:', error);
+        spinner.style.display = 'none';
+        alert('PDF 다운로드 중 오류가 발생했습니다. 다시 시도해주세요.');
+    });
+}
+
+// 4단계 다시 생성 버튼 처리 함수
+function removeRequiredOnRegenerate() {
+    // 4단계에서 다시 생성 버튼 클릭 시 required 속성 제거
+    const regenerateButtons = document.querySelectorAll('.regenerate-btn');
+    regenerateButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            // 현재 단계가 4단계인지 확인
+            const stepTitle = document.querySelector('.step-title');
+            if (stepTitle && stepTitle.textContent.includes('4단계')) {
+                // 주제 선택 라디오 버튼들의 required 속성 제거
+                const topicRadios = document.querySelectorAll('input[name="topic"]');
+                topicRadios.forEach(radio => {
+                    radio.removeAttribute('required');
+                });
+            }
+        });
+    });
+}
+
+// 페이지 로드 시 함수 실행
+document.addEventListener('DOMContentLoaded', removeRequiredOnRegenerate);
+</script>
+</body>
+</html>
