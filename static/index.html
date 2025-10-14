@@ -2,21 +2,44 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>에듀빌 드림로직</title>
+  <meta name="description" content="초등학교, 중학교, 고등학교 학생들을 위한 맞춤형 진로 탐색 서비스">
   <link rel="stylesheet" href="/static/style.css">
   <script src="/static/main.js" defer></script>
 </head>
 <body>
   <div class="container">
-    <h1>에듀빌 드림로직</h1>
+    <header>
+      <h1>드림로직</h1>
+      <p class="subtitle">당신의 꿈을 찾아가는 여정을 시작하세요</p>
+    </header>
    
-    <div class="button-group">
-      <a class="app-button" href="/elementary_school">초등학교 진로 탐색</a>
-      <a class="app-button" href="/middle_school">중학교 진로 탐색 </a>
-      <a class="app-button" href="/high_school">고등학교 진로 탐색</a>
-      <!-- <a class="app-button" href="/app1">app1 열기</a>
-      <a class="app-button" href="/app2">app2 열기</a> -->
-    </div>
+    <main class="content">
+      <div class="button-grid">
+        <a class="app-button elementary" href="/elementary_school">
+          <div class="button-content">
+            <span class="icon">🎈</span>
+            <h3>초등학교</h3>
+            <p>진로 탐색</p>
+          </div>
+        </a>
+        <a class="app-button middle" href="/middle_school">
+          <div class="button-content">
+            <span class="icon">🌟</span>
+            <h3>중학교</h3>
+            <p>진로 탐색</p>
+          </div>
+        </a>
+        <a class="app-button high" href="/high_school">
+          <div class="button-content">
+            <span class="icon">🚀</span>
+            <h3>고등학교</h3>
+            <p>진로 탐색</p>
+          </div>
+        </a>
+      </div>
+    </main>
   </div>
 </body>
 </html>
