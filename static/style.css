@@ -1,46 +1,232 @@
+/* Base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 body {
-  font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(to bottom right, #e6f0ff, #f9f9ff);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  margin: 0;
+  padding: 20px;
+  line-height: 1.6;
 }
 
 .container {
+  width: 100%;
+  max-width: 1200px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  padding: 40px;
   text-align: center;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 0 20px rgba(0,0,0,0.1);
-  padding: 40px 60px;
 }
 
-h1 {
+/* Header styles */
+header h1 {
+  font-size: 3.75rem;
+  color: #2c3e50;
   margin-bottom: 10px;
-  color: #0e264d;
+  font-weight: 700;
 }
 
-p {
-  color: #555;
-  margin-bottom: 30px;
+.subtitle {
+  color: #7f8c8d;
+  font-size: 1.1rem;
+  margin-bottom: 40px;
+  font-weight: 300;
 }
 
-.button-group {
-  display: flex;
-  gap: 20px;
-  justify-content: center;
+/* Content styles */
+.content {
+  width: 100%;
+}
+
+.button-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 30px;
+  justify-items: center;
 }
 
 .app-button {
+  display: block;
   text-decoration: none;
-  background-color: #007bff;
-  color: white;
-  padding: 12px 24px;
-  border-radius: 8px;
-  transition: background-color 0.3s ease;
+  width: 100%;
+  max-width: 320px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  overflow: hidden;
+  position: relative;
 }
 
 .app-button:hover {
-  background-color: #0056b3;
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+.app-button:active {
+  transform: translateY(-2px);
+}
+
+.button-content {
+  padding: 40px 30px;
+  position: relative;
+  z-index: 2;
+}
+
+.icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 20px;
+}
+
+.button-content h3 {
+  font-size: 1.5rem;
+  color: #2c3e50;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.button-content p {
+  color: #7f8c8d;
+  font-size: 1rem;
+  font-weight: 300;
+}
+
+/* Color themes for each button */
+.elementary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #ff9a9e, #fecfef);
+}
+
+.middle::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #a8edea, #fed6e3);
+}
+
+.high::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #fbc2eb, #a6c1ee);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  body {
+    padding: 15px;
+  }
+  
+  .container {
+    padding: 30px 20px;
+  }
+  
+  header h1 {
+    font-size: 3rem;
+  }
+  
+  .subtitle {
+    font-size: 1rem;
+    margin-bottom: 30px;
+  }
+  
+  .button-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .app-button {
+    max-width: 100%;
+  }
+  
+  .button-content {
+    padding: 30px 25px;
+  }
+  
+  .icon {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+  }
+  
+  .button-content h3 {
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 25px 15px;
+    border-radius: 15px;
+  }
+  
+  header h1 {
+    font-size: 2.7rem;
+  }
+  
+  .subtitle {
+    font-size: 0.9rem;
+  }
+  
+  .button-content {
+    padding: 25px 20px;
+  }
+  
+  .icon {
+    font-size: 2.2rem;
+  }
+  
+  .button-content h3 {
+    font-size: 1.2rem;
+  }
+  
+  .button-content p {
+    font-size: 0.9rem;
+  }
+}
+
+/* Large screens */
+@media (min-width: 1200px) {
+  .button-grid {
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  .app-button {
+    transition: none;
+  }
+  
+  .app-button:hover {
+    transform: none;
+  }
+}
+
+/* Focus styles for keyboard navigation */
+.app-button:focus {
+  outline: 3px solid #667eea;
+  outline-offset: 2px;
 }
