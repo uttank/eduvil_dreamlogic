@@ -223,14 +223,14 @@ class ElementaryCareerPDFGenerator:
                 dream_elements = self._format_dream_logic(dream_logic_result)
                 story.extend(dream_elements)
                 story.append(Spacer(1, 15))
-            
+            """
             # 응원 메시지
             if encouragement_message:
                 story.append(Paragraph("💝 AI가 보내는 특별한 응원 메시지", self.styles['heading']))
                 story.append(Spacer(1, 8))
                 story.append(Paragraph(encouragement_message, self.styles['result']))
                 story.append(Spacer(1, 15))
-            
+            """
             # PDF 빌드
             doc.build(story)
             
