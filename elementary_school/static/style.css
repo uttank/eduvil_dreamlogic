@@ -961,3 +961,180 @@ body {
 .dream-logic-screen .action-buttons {
     margin-top: 30px;
 }
+
+/* ============================================================================
+   Step 4 AI 이슈 생성 관련 스타일 (새로운 기능)
+   ============================================================================ */
+
+.step4-ai-container {
+    margin-top: 20px;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.ai-loading {
+    text-align: center;
+    padding: 40px 20px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.ai-issues-section {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    animation: fadeInUp 0.8s ease-out;
+}
+
+/* Step 4에서 choice-item 스타일 재사용하되 약간 수정 */
+.ai-issues-section .choice-item {
+    margin-bottom: 15px;
+    padding: 20px;
+    border: 2px solid #e1e8ff;
+    border-radius: 12px;
+    background: #f8faff;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-start;
+}
+
+.ai-issues-section .choice-item:hover {
+    border-color: #667eea;
+    background: #f0f4ff;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+}
+
+.ai-issues-section .choice-item.selected {
+    border-color: #667eea;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.ai-issues-section .choice-item input[type="radio"] {
+    margin-right: 15px;
+    margin-top: 2px;
+    transform: scale(1.2);
+}
+
+.ai-issues-section .choice-item label {
+    flex: 1;
+    line-height: 1.5;
+    font-size: 1rem;
+    cursor: pointer;
+    margin: 0;
+}
+
+.regenerate-section {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.regenerate-section button {
+    background: #f39c12;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.regenerate-section button:hover:not(:disabled) {
+    background: #e67e22;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(243, 156, 18, 0.3);
+}
+
+.regenerate-section button:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.ai-error-section {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.ai-error-section .error-card {
+    padding: 20px;
+    border-radius: 10px;
+    background: #ffe6e6;
+    border: 2px solid #ffcccc;
+}
+
+.error-message {
+    color: #e74c3c;
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+}
+
+.ai-error-section button {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.ai-error-section button:hover {
+    background: #c0392b;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+}
+
+/* 반응형 디자인 - Step 4 */
+@media (max-width: 768px) {
+    .issue-item {
+        padding: 12px;
+        margin-bottom: 12px;
+    }
+    
+    .issue-number {
+        width: 25px;
+        height: 25px;
+        font-size: 0.8rem;
+        margin-right: 10px;
+    }
+    
+    .issue-text {
+        font-size: 0.9rem;
+    }
+    
+    .ai-issues-section h3 {
+        font-size: 1.3rem;
+    }
+    
+    .step4-submit-section button {
+        padding: 12px 24px;
+        font-size: 1rem;
+    }
+}

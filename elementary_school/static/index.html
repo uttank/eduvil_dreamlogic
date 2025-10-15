@@ -279,6 +279,309 @@
         }
         
         // 진로 탐색 시작 함수
+        // ============================================================================
+        // Step 4 AI 이슈 생성 처리 함수들 (앞쪽으로 이동)
+        // ============================================================================
+        function handleStep4AIGeneration() {
+            console.log('🤖 Step 4 AI 이슈 생성 처리 시작');
+            
+            // 기존 선택지 컨테이너를 Step 4용으로 재사용
+            const choicesContainer = document.getElementById('choicesContainer');
+            const customAnswerContainer = document.getElementById('customAnswerContainer');
+            const submitAnswer = document.getElementById('submitAnswer');
+            
+            if (customAnswerContainer) {
+                customAnswerContainer.style.display = 'none';
+            }
+            
+            if (submitAnswer) {
+                submitAnswer.style.display = 'none';
+            }
+            
+            // 선택지 컨테이너에 Step 4 로딩 표시
+            if (choicesContainer) {
+                choicesContainer.innerHTML = `
+                    <div class="ai-loading" id="step4Loading">
+                        <div class="loading-spinner"></div>
+                        <p>AI가 맞춤형 이슈를 생성하고 있어요... 🤖✨</p>
+                    </div>
+                    
+                    <div class="step4-issues-list" id="step4IssuesList" style="display: none;">
+                        <!-- AI 생성 이슈들이 여기에 표시됩니다 -->
+                    </div>
+                    
+                    <div class="regenerate-section" style="margin: 20px 0; text-align: center; display: none;" id="step4RegenerateSection">
+                        <button type="button" id="regenerateStep4Issues" class="btn btn-secondary">
+                            🔄 다른 이슈로 다시 생성 (<span id="regenerateCount">0</span>/5)
+                        </button>
+                    </div>
+                    
+                    <div class="action-buttons" id="step4SubmitSection" style="display: none;">
+                        <button type="button" id="submitStep4Choice" class="btn btn-primary" disabled>
+                            🚀 다음 단계로
+                        </button>
+                    </div>
+                `;
+                choicesContainer.style.display = 'block';
+            }
+            
+            // 자동으로 AI 이슈 생성 시작
+            generateStep4AIIssues();
+        }
+
+        async function generateStep4AIIssues(regenerate = false) {
+            console.log(`🤖 Step 4 이슈 생성 ${regenerate ? '재생성' : '첫 생성'}`);
+            
+            showStep4Loading();
+            
+            // 재생성 버튼과 제출 버튼 이벤트 리스너 설정
+            setTimeout(() => {
+                const regenerateBtn = document.getElementById('regenerateStep4Issues');
+                if (regenerateBtn) {
+                    regenerateBtn.onclick = () => generateStep4AIIssues(true);
+                }
+                
+                const submitBtn = document.getElementById('submitStep4Choice');
+                if (submitBtn) {
+                    submitBtn.onclick = () => submitStep4Choice();
+                }
+            }, 100);
+            
+            try {
+                const response = await fetch(`/elementary_school/career/${sessionId}/step4-issues`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        session_id: sessionId,
+                        regenerate: regenerate
+                    })
+                });
+                
+                const data = await response.json();
+                console.log('📊 Step 4 이슈 생성 응답:', data);
+                
+                if (!response.ok) {
+                    throw new Error(data.detail || '이슈 생성에 실패했습니다.');
+                }
+                
+                if (data.success && data.data.issues) {
+                    displayStep4Issues(data.data.issues, data.data.regeneration_count, data.data.can_regenerate);
+                } else {
+                    throw new Error('이슈 데이터가 없습니다.');
+                }
+                
+            } catch (error) {
+                console.error('❌ Step 4 이슈 생성 오류:', error);
+                showStep4Error(error.message);
+            }
+        }
+
+        function showStep4Loading() {
+            console.log('⏳ Step 4 로딩 표시');
+            
+            const loading = document.getElementById('step4Loading');
+            const issuesList = document.getElementById('step4IssuesList');
+            const regenerateSection = document.getElementById('step4RegenerateSection');
+            const submitSection = document.getElementById('step4SubmitSection');
+            
+            if (loading) loading.style.display = 'block';
+            if (issuesList) issuesList.style.display = 'none';
+            if (regenerateSection) regenerateSection.style.display = 'none';
+            if (submitSection) submitSection.style.display = 'none';
+        }
+
+        function displayStep4Issues(issues, regenerationCount, canRegenerate) {
+            console.log('📋 Step 4 이슈 표시:', issues);
+            
+            const loading = document.getElementById('step4Loading');
+            const issuesListContainer = document.getElementById('step4IssuesList');
+            const regenerateSection = document.getElementById('step4RegenerateSection');
+            const regenerateBtn = document.getElementById('regenerateStep4Issues');
+            const regenerateCountSpan = document.getElementById('regenerateCount');
+            const submitSection = document.getElementById('step4SubmitSection');
+            
+            // 로딩 숨기기
+            if (loading) loading.style.display = 'none';
+            
+            // 이슈 목록 생성
+            if (issuesListContainer) {
+                issuesListContainer.innerHTML = '';
+                
+                issues.forEach((issue, index) => {
+                    const choiceDiv = document.createElement('div');
+                    choiceDiv.className = 'choice-item';
+                    choiceDiv.style.cursor = 'pointer';
+                    
+                    const input = document.createElement('input');
+                    input.type = 'radio';
+                    input.name = 'step4Issue';
+                    input.value = index + 1;
+                    input.id = `step4_issue_${index + 1}`;
+                    
+                    const label = document.createElement('label');
+                    label.htmlFor = `step4_issue_${index + 1}`;
+                    label.textContent = `${index + 1}. ${issue}`;
+                    label.style.cursor = 'pointer';
+                    
+                    // 클릭 이벤트 추가
+                    const handleClick = () => {
+                        // 기존 선택 해제
+                        document.querySelectorAll('input[name="step4Issue"]').forEach(inp => {
+                            inp.checked = false;
+                            inp.parentElement.classList.remove('selected');
+                        });
+                        
+                        // 현재 선택 설정
+                        input.checked = true;
+                        choiceDiv.classList.add('selected');
+                        
+                        // 선택 처리
+                        onStep4IssueSelect();
+                    };
+                    
+                    input.addEventListener('change', handleClick);
+                    choiceDiv.addEventListener('click', handleClick);
+                    label.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        handleClick();
+                    });
+                    
+                    choiceDiv.appendChild(input);
+                    choiceDiv.appendChild(label);
+                    issuesListContainer.appendChild(choiceDiv);
+                });
+                
+                issuesListContainer.style.display = 'block';
+            }
+            
+            // 재생성 버튼 업데이트
+            if (regenerateSection && regenerateBtn && regenerateCountSpan) {
+                regenerateCountSpan.textContent = regenerationCount;
+                regenerateSection.style.display = canRegenerate ? 'block' : 'none';
+                regenerateBtn.disabled = !canRegenerate;
+            }
+            
+            // 제출 섹션 표시
+            if (submitSection) {
+                submitSection.style.display = 'block';
+            }
+        }
+
+        function onStep4IssueSelect() {
+            console.log('✅ Step 4 이슈 선택됨');
+            
+            const submitBtn = document.getElementById('submitStep4Choice');
+            const selectedRadio = document.querySelector('input[name="step4Issue"]:checked');
+            
+            if (submitBtn) {
+                submitBtn.disabled = !selectedRadio;
+            }
+            
+            // 선택된 이슈 저장
+            if (selectedRadio) {
+                window.selectedStep4Issue = parseInt(selectedRadio.value);
+                console.log('📌 선택된 이슈 번호:', window.selectedStep4Issue);
+            }
+        }
+
+        async function submitStep4Choice() {
+            console.log('📤 Step 4 선택 제출');
+            console.log('🔍 selectedStep4Issue:', window.selectedStep4Issue);
+            console.log('🔍 sessionId:', sessionId);
+            console.log('🔍 studentInfo:', studentInfo);
+            
+            if (!window.selectedStep4Issue) {
+                showError('이슈를 선택해주세요.');
+                return;
+            }
+            
+            if (!sessionId) {
+                showError('세션 정보가 없습니다.');
+                return;
+            }
+            
+            try {
+                const requestBody = {
+                    session_id: sessionId,
+                    student_info: studentInfo,
+                    response: {
+                        choice_numbers: [window.selectedStep4Issue],
+                        custom_answer: null
+                    }
+                };
+                
+                console.log('📋 요청 데이터:', requestBody);
+                
+                const response = await fetch(`/elementary_school/career/${sessionId}/step4-submit`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                console.log('📡 응답 상태:', response.status, response.statusText);
+                
+                const data = await response.json();
+                console.log('📊 Step 4 제출 응답:', data);
+                
+                if (!response.ok) {
+                    throw new Error(data.detail || data.message || 'Step 4 제출에 실패했습니다.');
+                }
+                
+                if (data.success) {
+                    console.log('✅ Step 4 성공적으로 완료');
+                    
+                    // Step 4 완료 후 바로 AI 진로 추천 요청
+                    console.log('🎉 Step 4 완료, AI 진로 추천 요청');
+                    await requestAIRecommendation();
+                } else {
+                    throw new Error(data.message || 'Step 4 처리에 실패했습니다.');
+                }
+                
+            } catch (error) {
+                console.error('❌ Step 4 제출 오류:', error);
+                showError(`Step 4 제출 중 오류가 발생했습니다: ${error.message}`);
+            }
+        }
+
+        // 다음 질문 요청 함수 추가
+        async function requestNextQuestion() {
+            try {
+                const response = await fetch(`/elementary_school/career/${sessionId}/question`);
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    showQuestionScreen(data.data);
+                } else {
+                    console.log('🎉 모든 단계 완료!');
+                    // 완료 화면 표시 로직 추가 가능
+                }
+            } catch (error) {
+                console.error('❌ 다음 질문 요청 오류:', error);
+            }
+        }
+
+        function showStep4Error(message) {
+            console.log('❌ Step 4 오류 표시:', message);
+            
+            const loading = document.getElementById('step4Loading');
+            const issues = document.getElementById('step4Issues');
+            const error = document.getElementById('step4Error');
+            
+            if (loading) loading.style.display = 'none';
+            if (issues) issues.style.display = 'none';
+            if (error) {
+                error.style.display = 'block';
+                const errorMessage = error.querySelector('.error-message');
+                if (errorMessage) {
+                    errorMessage.textContent = message;
+                }
+            }
+        }
+
         async function startCareerExploration() {
             console.log('🚀 진로 탐색 시작');
             
@@ -511,12 +814,31 @@
             }
             
             // 선택지 렌더링 (체크박스/라디오 버튼 형태)
+            // Step 4인 경우 AI 이슈 생성으로 처리
+            
+            console.log('🔍 Stage:', questionData.stage, 'Number:', stageNumber);
+            console.log('🔍 Step 4 체크:', questionData.stage === 'step_4');
+            console.log('🔍 Step 5 체크:', questionData.stage === 'step_5');
+            console.log('🔍 Choices:', questionData.choices);
+            
+            if (questionData.stage === 'step_4') {
+                console.log('🚀 Step 4 감지! AI 이슈 생성 처리');
+                // Step 4는 AI 이슈 생성으로 처리
+                handleStep4AIGeneration();
+                return;
+            }
+            
+            if (questionData.stage === 'step_5') {
+                console.log('🚀 Step 5 감지! AI 진로 추천 처리');
+                // Step 5는 AI 진로 추천으로 처리
+                requestAIRecommendation();
+                return;
+            }
+            
             if (choicesContainer && questionData.choices) {
                 choicesContainer.innerHTML = '';
-                // stage 값에서 숫자 추출하여 비교
-                const stageNumber = questionData.stage ? parseInt(questionData.stage.replace('step_', '')) : 1;
                 const isMultipleChoice = stageNumber <= 2; // 1-2단계는 다중선택, 3-4단계는 단일선택
-                console.log('🔍 Stage:', questionData.stage, 'Number:', stageNumber, 'Multiple:', isMultipleChoice);
+                console.log('🔍 Multiple:', isMultipleChoice);
                 
                 questionData.choices.forEach((choice, index) => {
                     const choiceDiv = document.createElement('div');
