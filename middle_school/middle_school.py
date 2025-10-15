@@ -219,11 +219,16 @@ async def regenerate_step4_choices(session_id: str):
         if not success:
             raise HTTPException(status_code=400, detail=message)
         
+        # 세션에서 재생성 횟수 가져오기
+        session = career_service.get_session(session_id)
+        regenerate_count = session.step4_regenerate_count if session else 0
+        
         return ApiResponse(
             success=True,
             message=message,
             data={
                 "choices": new_choices,
+                "regenerate_count": regenerate_count,
                 "session_id": session_id
             }
         )
