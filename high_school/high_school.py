@@ -989,7 +989,7 @@ def create_pdf_report(career_data):
     current_date = datetime.now().strftime("%Y년 %m월 %d일")
     story.append(Paragraph(f"생성일: {current_date}", normal_style))
     story.append(Spacer(1, 25))
-    
+    """
     # 진로 탐색 섹션들
     sections = [
         ("1️⃣ 선택한 직업", career_data.get('career', '정보 없음')),
@@ -1018,11 +1018,11 @@ def create_pdf_report(career_data):
             story.append(Paragraph(f"• {clean_content}", bullet_style))
         
         story.append(Spacer(1, 15))
-    
+    """
     # 최종 요약
     final_summary = career_data.get('final_summary', '')
     if final_summary:
-        story.append(Paragraph("7️⃣ 최종 종합 계획", heading_style))
+        story.append(Paragraph("드림로직", heading_style))
         
         # 줄바꿈으로 분리하여 처리
         summary_lines = str(final_summary).split('\n')
