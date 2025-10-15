@@ -365,8 +365,158 @@ class CareerRecommendationService:
 • 금: 블록코딩/센서 제어 30분 연습
 • 주말: 업사이클/프로토타입 개선 1가지
 응원 메모
-유진의 ‘야무진 손’과 ‘새로운 것 만들기’ 사랑은 큰 힘이야. 차근차근 해 보면, 유진만의 친환경 로봇이 세상을 더 깨끗하게 바꿀 거야! 😊💚
+유진의 '야무진 손'과 '새로운 것 만들기' 사랑은 큰 힘이야. 차근차근 해 보면, 유진만의 친환경 로봇이 세상을 더 깨끗하게 바꿀 거야! 😊💚
 """
+    
+    def generate_step4_issues(self, student_name: str, responses: Dict[CareerStage, Dict], regenerate: bool = False) -> List[str]:
+        """Step 4: 1~3단계 응답 기반 AI 이슈 생성 (새로운 기능)"""
+        
+        # 1~3단계 응답 분석 - 실제 텍스트로 추출
+        interests = self._extract_choices_text_with_stage(responses.get(CareerStage.STEP_1, {}), CareerStage.STEP_1)
+        strengths = self._extract_choices_text_with_stage(responses.get(CareerStage.STEP_2, {}), CareerStage.STEP_2)
+        values = self._extract_choices_text_with_stage(responses.get(CareerStage.STEP_3, {}), CareerStage.STEP_3)
+        
+        system_prompt = """당신은 초등학생 진로 상담사입니다.
+학생의 흥미, 장점, 가치관을 분석하여 사회/기술적 최신 이슈나 해결과제를 5가지 제시해주세요.
+
+중요한 조건:
+1. (적합성) 초등 눈높이 표현으로 친절한 말투, 모호어 금지
+2. (다양성) 예술·과학·스포츠·공동체·자연 등 스펙트럼 균형
+3. (선택성) 서로 다른 성향이 겹치지 않도록 중복 최소화
+
+출력 형식: 
+각 이슈를 한 문장으로 작성하고, 번호를 매기지 마세요.
+예시:
+AI와 함께하는 나만의 캐릭터 및 스토리 창작 (A.I. Co-Creation)
+모두를 위한 캐릭터(Universal Character) 디자인 및 윤리
+가상현실/증강현실(VR/AR) 속 인터랙티브 만화 제작
+캐릭터 지적재산권(IP)을 활용한 다중 플랫폼 스토리 확장
+친환경 및 사회 공헌 메시지를 담은 '착한 캐릭터' 개발"""
+
+        user_prompt = f"""
+학생 이름: {student_name}
+흥미: {interests}
+장점: {strengths}
+가치관: {values}
+
+위 정보를 바탕으로 {student_name}님이 관심을 가질 만한 사회/기술적 최신 이슈나 해결과제를 5가지 제시해주세요.
+각 이슈는 학생의 흥미, 장점, 가치관과 연결되어야 합니다.
+"""
+
+        if regenerate:
+            user_prompt += "\n\n중요: 이전과는 완전히 다른 새로운 이슈들을 제시해주세요. 중복되지 않는 다양한 분야와 관점으로 접근해주세요."
+
+        print(f"\n🤖 GPT-4에게 보내는 프롬프트 (Step 4 이슈 생성 - {'재생성' if regenerate else '첫 생성'}):")
+        print("=" * 80)
+        print("📋 System Prompt:")
+        print(system_prompt)
+        print("\n👤 User Prompt:")
+        print(user_prompt)
+        print("=" * 80)
+
+        try:
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=0.9 if regenerate else 0.7,
+                max_tokens=600
+            )
+            
+            content = response.choices[0].message.content
+            if not content:
+                return self._get_fallback_step4_issues(student_name)
+            
+            # 응답을 줄 단위로 분할하고 정리
+            lines = [line.strip() for line in content.strip().split('\n') if line.strip()]
+            
+            # 번호나 불필요한 텍스트 제거
+            cleaned_lines = []
+            for line in lines:
+                # 번호 제거 (1., 2., -, • 등)
+                line = line.strip()
+                if line.startswith(('1.', '2.', '3.', '4.', '5.', '-', '•', '▪', '◦')):
+                    line = line[2:].strip()
+                elif line[0:1].isdigit() and line[1:2] in ['.', ')', ':']:
+                    line = line[2:].strip()
+                
+                if line and len(line) > 10:  # 너무 짧은 줄 제외
+                    cleaned_lines.append(line)
+            
+            # 정확히 5개 이슈 반환
+            if len(cleaned_lines) >= 5:
+                return cleaned_lines[:5]
+            else:
+                # 부족한 경우 대체 이슈 추가
+                fallback_issues = self._get_fallback_step4_issues(student_name)
+                while len(cleaned_lines) < 5:
+                    for fallback in fallback_issues:
+                        if fallback not in cleaned_lines:
+                            cleaned_lines.append(fallback)
+                            break
+                    if len(cleaned_lines) >= 5:
+                        break
+                return cleaned_lines[:5]
+            
+        except Exception as e:
+            logger.error(f"OpenAI API 호출 오류 (Step 4 이슈): {str(e)}")
+            return self._get_fallback_step4_issues(student_name)
+    
+    def _extract_choices_text(self, response_data: Dict) -> str:
+        """응답 데이터에서 선택지 텍스트 추출"""
+        if not response_data or 'choice_numbers' not in response_data:
+            return "정보 없음"
+        
+        # custom_answer가 있으면 그것을 사용
+        if response_data.get('custom_answer'):
+            return response_data['custom_answer']
+        
+        choice_numbers = response_data.get('choice_numbers', [])
+        if not choice_numbers:
+            return "정보 없음"
+        
+        return f"선택지 {', '.join(map(str, choice_numbers))}"
+    
+    def _extract_choices_text_with_stage(self, response_data: Dict, stage: CareerStage) -> str:
+        """단계별 응답 데이터에서 실제 선택지 텍스트 추출"""
+        if not response_data or 'choice_numbers' not in response_data:
+            return "정보 없음"
+        
+        # custom_answer가 있으면 그것을 사용
+        if response_data.get('custom_answer'):
+            return response_data['custom_answer']
+        
+        choice_numbers = response_data.get('choice_numbers', [])
+        if not choice_numbers:
+            return "정보 없음"
+        
+        # STAGE_QUESTIONS에서 실제 선택지 텍스트 가져오기
+        stage_data = STAGE_QUESTIONS.get(stage)
+        if not stage_data or 'choices' not in stage_data:
+            return f"선택지 {', '.join(map(str, choice_numbers))}"
+        
+        choices = stage_data['choices']
+        selected_texts = []
+        
+        for choice_num in choice_numbers:
+            if 1 <= choice_num <= len(choices):
+                selected_texts.append(choices[choice_num - 1])
+            else:
+                selected_texts.append(f"선택지 {choice_num}")
+        
+        return ", ".join(selected_texts)
+    
+    def _get_fallback_step4_issues(self, student_name: str) -> List[str]:
+        """Step 4 이슈 생성 실패시 대체 이슈"""
+        return [
+            "AI와 함께하는 창의적인 콘텐츠 제작과 윤리적 사용 방법",
+            "친환경 기술을 활용한 지속가능한 미래 도시 설계",
+            "디지털 시대의 건강한 소통과 사이버 예절 문화 만들기",
+            "로봇과 인간이 협력하는 새로운 일자리와 역할 분담",
+            "다양성을 존중하는 포용적인 공동체 만들기와 갈등 해결"
+        ]
     
     def _get_dream_logic_user_prompt(self, student_name: str, response_text: str, career_goal: str) -> str:
         """드림로직 사용자 프롬프트"""

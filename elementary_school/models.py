@@ -159,6 +159,9 @@ class CareerExplorationSession(BaseModel):
     current_stage: Optional[CareerStage] = CareerStage.STEP_0
     responses: Dict[CareerStage, StepResponse] = {}
     completed_stages: List[CareerStage] = []
+    # 4단계 AI 이슈 관련 필드 (새로운 기능)
+    step4_ai_issues: Optional[List[str]] = None
+    step4_regeneration_count: int = 0
     # 5단계 관련 필드
     ai_career_recommendation: Optional[str] = None
     career_confirmed: bool = False

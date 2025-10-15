@@ -76,7 +76,21 @@ class CareerExplorationService:
                 ai_recommendation=session.ai_career_recommendation
             )
         
-        # 1-4단계는 번호가 매겨진 선택지 반환
+        # 4단계(미래 탐색)는 AI 이슈 생성을 위해 선택지 없이 반환
+        if current_stage == CareerStage.STEP_4:
+            print(f"🔍 Step 4 질문 생성 - current_stage: {current_stage}")
+            print(f"🔍 Step 4 질문 생성 - current_stage.value: {current_stage.value}")
+            response = StageQuestionResponse(
+                stage=current_stage,
+                question=stage_data["question"],
+                choices=None,  # AI 이슈로 대체
+                encouragement=encouragement,
+                student_name=session.student_info.name if session.student_info else None
+            )
+            print(f"🔍 Step 4 응답 생성: {response.dict()}")
+            return response
+        
+        # 1-3단계는 번호가 매겨진 선택지 반환
         numbered_choices = [
             f"{i+1}. {choice}" 
             for i, choice in enumerate(stage_data["choices"])

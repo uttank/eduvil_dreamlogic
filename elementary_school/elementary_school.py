@@ -42,6 +42,17 @@ class PDFDownloadRequest(BaseModel):
     dream_logic_result: Optional[str] = ""
     encouragement_message: Optional[str] = ""
 
+# Step 4 관련 모델들
+class Step4IssueRequest(BaseModel):
+    """Step 4 이슈 생성 요청"""
+    session_id: str
+    regenerate: Optional[bool] = False
+
+class Step4IssueResponse(BaseModel):
+    """Step 4 이슈 응답"""
+    issues: List[str]
+    regeneration_count: int
+
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -727,6 +738,138 @@ async def get_ai_service_status():
             message="AI 서비스 상태 확인에 실패했습니다.",
             data={"error": str(e)}
         )
+
+# =============================================================================
+# Step 4 AI 기반 이슈 생성 엔드포인트들 (새로운 기능)
+# =============================================================================
+
+@app.post("/career/{session_id}/step4-issues", response_model=ApiResponse)
+async def generate_step4_issues(session_id: str, request: Step4IssueRequest):
+    """Step 4: 1~3단계 응답 기반 AI 이슈 생성"""
+    try:
+        if not ai_service:
+            raise HTTPException(status_code=503, detail="AI 서비스를 사용할 수 없습니다.")
+        
+        # 세션 상태 확인
+        session = career_service.get_session(session_id)
+        if not session:
+            raise HTTPException(status_code=404, detail="세션을 찾을 수 없습니다.")
+        
+        # 1~3단계 완료 확인
+        required_stages = [CareerStage.STEP_1, CareerStage.STEP_2, CareerStage.STEP_3]
+        if not all(stage in session.completed_stages for stage in required_stages):
+            raise HTTPException(status_code=400, detail="1~3단계를 모두 완료해야 이슈를 생성할 수 있습니다.")
+        
+        # 재생성 횟수 확인
+        regeneration_count = getattr(session, 'step4_regeneration_count', 0)
+        if request.regenerate and regeneration_count >= 5:
+            raise HTTPException(status_code=400, detail="재생성은 최대 5회까지만 가능합니다.")
+        
+        # AI를 통한 이슈 생성
+        student_name = session.student_info.name if session.student_info else "친구"
+        responses_dict = {stage: response.dict() for stage, response in session.responses.items() if stage in required_stages}
+        
+        issues = ai_service.generate_step4_issues(
+            student_name=student_name,
+            responses=responses_dict,
+            regenerate=request.regenerate or False
+        )
+        
+        if not issues or len(issues) != 5:
+            raise HTTPException(status_code=500, detail="이슈 생성에 실패했습니다.")
+        
+        # 세션에 이슈 저장 및 재생성 횟수 업데이트
+        session.step4_ai_issues = issues
+        if request.regenerate:
+            session.step4_regeneration_count = regeneration_count + 1
+        else:
+            session.step4_regeneration_count = 0
+        
+        career_service.sessions[session_id] = session
+        
+        return ApiResponse(
+            success=True,
+            message="AI 기반 이슈가 생성되었습니다!",
+            data={
+                "issues": issues,
+                "regeneration_count": session.step4_regeneration_count,
+                "can_regenerate": session.step4_regeneration_count < 5
+            }
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Step 4 이슈 생성 오류: {str(e)}")
+        raise HTTPException(status_code=500, detail="이슈 생성에 실패했습니다.")
+
+@app.post("/career/{session_id}/step4-submit", response_model=ApiResponse)
+async def submit_step4_choice(session_id: str, request: NextStageRequest):
+    """Step 4: AI 생성 이슈 중 선택 제출"""
+    try:
+        # 세션 상태 확인
+        session = career_service.get_session(session_id)
+        if not session:
+            raise HTTPException(status_code=404, detail="세션을 찾을 수 없습니다.")
+        
+        if session.current_stage != CareerStage.STEP_4:
+            raise HTTPException(status_code=400, detail="현재 Step 4 단계가 아닙니다.")
+        
+        if not hasattr(session, 'step4_ai_issues') or not session.step4_ai_issues:
+            raise HTTPException(status_code=400, detail="먼저 이슈를 생성해주세요.")
+        
+        # 응답 검증
+        if not request.response or not request.response.choice_numbers:
+            raise HTTPException(status_code=400, detail="선택지를 입력해주세요.")
+        
+        choice_num = request.response.choice_numbers[0]
+        if choice_num < 1 or choice_num > 5:
+            raise HTTPException(status_code=400, detail="1~5번 중에서 선택해주세요.")
+        
+        # 선택된 이슈 저장
+        selected_issue = session.step4_ai_issues[choice_num - 1]
+        
+        # Step 4 응답으로 변환 (기존 형식 호환성)
+        step4_response = StepResponse(
+            choice_numbers=[choice_num],
+            custom_answer=selected_issue
+        )
+        
+        # 응답 제출 처리
+        success, message, next_stage = career_service.submit_response(
+            session_id=session_id,
+            student_info=request.student_info,
+            response=step4_response
+        )
+        
+        if not success:
+            raise HTTPException(status_code=400, detail=message)
+        
+        # 응답 데이터 구성
+        response_data = {
+            "message": message,
+            "selected_issue": selected_issue,
+            "next_stage": next_stage,
+            "completed": next_stage is None
+        }
+        
+        # 다음 단계 정보 추가
+        if next_stage:
+            next_question = career_service.get_current_question(session_id)
+            if next_question:
+                response_data["next_question"] = next_question.dict()
+        
+        return ApiResponse(
+            success=True,
+            message="Step 4가 성공적으로 완료되었습니다!",
+            data=response_data
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Step 4 제출 오류: {str(e)}")
+        raise HTTPException(status_code=500, detail="Step 4 제출에 실패했습니다.")
 
 # PDF 다운로드 엔드포인트 (기존 - ReportLab 웹 스타일)
 @app.post("/career/download-pdf")
