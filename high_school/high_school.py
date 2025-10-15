@@ -10,14 +10,8 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import os
 from datetime import datetime
-import tempfile
-# PDF 생성을 위한 라이브러리
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import inch
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
+# PDF 생성을 위한 모듈
+from .pdf_generator import pdf_generator
 
 
 # OpenAI API 키 설정
@@ -677,53 +671,6 @@ async def career_flow_post(
             return templates.TemplateResponse("career_flow_allinone.html", context)
 
 
-def translate_career_to_english(career_korean):
-    """한글 직업명을 영어로 번역"""
-    try:
-        # 한글이 포함되어 있는지 확인
-        has_korean = any('\uac00' <= char <= '\ud7af' for char in career_korean)
-        
-        if not has_korean:
-            # 한글이 없으면 영어로 간주하고 정리만
-            english_career = ''.join(c for c in career_korean if c.isalnum() or c.isspace())
-            result = english_career.lower().replace(' ', '_')
-            return result
-        
-        # 한글이 있는 경우 OpenAI로 번역
-        chat_completion = client.chat.completions.create(
-            model=DEFAULT_GPT_MODEL,
-            messages=[
-                {"role": "system", "content": "당신은 한국어 직업명을 영어로 번역하는 전문가입니다. 직업명만 간단하게 영어로 번역해주세요. 부가 설명은 하지 말고 직업명만 답변하세요."},
-                {"role": "user", "content": f"다음 한국어 직업명을 영어로 번역해주세요: {career_korean}"},
-            ],
-            max_completion_tokens=200
-        )
-        
-        english_career = chat_completion.choices[0].message.content
-        if not english_career or not english_career.strip():
-            english_career = "unknown_job"
-        else:
-            english_career = english_career.strip()
-        
-        # 특수문자 제거하고 소문자로 변환, 공백을 언더스코어로
-        english_career = ''.join(c for c in english_career if c.isalnum() or c.isspace())
-        english_career = english_career.lower().replace(' ', '_')
-        
-        # 빈 문자열 체크
-        if not english_career or english_career == '_':
-            english_career = "unknown_job"
-        
-        return english_career
-        
-    except Exception as e:
-        # 번역 실패 시 한글을 안전한 형태로 변환
-        import re
-        safe_career = re.sub(r'[^\w\s가-힣]', '', career_korean)
-        safe_career = re.sub(r'\s+', '_', safe_career.strip())
-        result = f"korean_job_{safe_career}" if safe_career else "unknown_job"
-        return result
-
-
 @app.post("/career/download-pdf")
 async def download_pdf(
     career: str = Form(...),
@@ -748,30 +695,11 @@ async def download_pdf(
         }
         
         # PDF 생성
-        pdf_file = create_pdf_report(career_data)
+        pdf_file = pdf_generator.generate_career_report(career_data)
         
         if pdf_file:
-            # 다운로드 파일명 생성 (한글 직업명을 영어로 번역)
-            import re
-            import urllib.parse
-            
-            # 한글 직업명을 영어로 번역
-            english_career = translate_career_to_english(career)
-            
-            # 파일명을 영문으로 생성 (날짜만 포함, 시간 제외)
-            timestamp = datetime.now().strftime('%Y%m%d')
-            
-            # 번역된 직업명이 있으면 추가, 없으면 기본 파일명
-            if english_career and english_career.strip():
-                filename = f"dreamlogic_career_report_{timestamp}_{english_career}.pdf"
-            else:
-                filename = f"dreamlogic_career_report_{timestamp}_unknown_job.pdf"
-            
-            # 한글 파일명도 생성 (UTF-8 인코딩)
-            safe_career = re.sub(r'[^\w\s가-힣]', '', career)
-            safe_career = re.sub(r'\s+', '_', safe_career.strip())
-            korean_filename = f"드림로직_진로탐색결과_{safe_career}_{timestamp}.pdf"
-            encoded_korean_filename = urllib.parse.quote(korean_filename)
+            # 다운로드 파일명 생성
+            filename, encoded_korean_filename = pdf_generator.generate_download_filename(career)
             
             # Content-Disposition 헤더 설정 (영어 파일명 + 한글 파일명 옵션)
             return FileResponse(
@@ -788,6 +716,7 @@ async def download_pdf(
     except Exception as e:
         print(f"PDF 다운로드 오류: {e}")
         return HTMLResponse(f"PDF 다운로드 중 오류가 발생했습니다: {str(e)}", status_code=500)
+
 
 def call_gpt_list(prompt, system_message, max_completion_tokens=None, temperature=0.3, fallback=None, strip_chars='-•[]1234567890. '):
     """
@@ -851,193 +780,4 @@ def call_gpt_list(prompt, system_message, max_completion_tokens=None, temperatur
                 error_message = f"API 호출 실패 (모델: {DEFAULT_GPT_MODEL}): {str(e)}"
                 print(error_message)
                 return fallback if fallback else [f"이슈를 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요."]
-
-
-def setup_korean_font():
-    """한글 폰트 설정 (웹 호환성 우선)"""
-    font_name = 'Helvetica'  # 기본값
-    
-    # 웹 호환 한글 폰트 경로 (우선순위)
-    font_paths = [
-        # 1순위: 네이버 나눔고딕 (웹 서비스 호환성 최우선)
-        os.path.join(os.path.dirname(__file__), "fonts", "NanumGothic.ttf"),
-        # 2순위: macOS 시스템 폰트 (개발 환경용)
-        '/System/Library/Fonts/AppleSDGothicNeo.ttc',
-        # 3순위: Linux 환경의 나눔고딕
-        '/usr/share/fonts/truetype/nanum/NanumGothic.ttf',  # Ubuntu/Debian
-        '/usr/share/fonts/nanum-gothic/NanumGothic.ttf',    # CentOS/RHEL
-        # 4순위: Windows 환경
-        'C:/Windows/Fonts/malgun.ttf',  # 맑은 고딕
-    ]
-    
-    for i, font_path in enumerate(font_paths):
-        if os.path.exists(font_path):
-            try:
-                font_reg_name = f'NanumGothic{i}'
-                
-                if font_path.endswith('.ttc'):
-                    # TTC 파일의 경우 서브폰트 지정
-                    pdfmetrics.registerFont(TTFont(font_reg_name, font_path, subfontIndex=0))
-                else:
-                    # TTF 파일
-                    pdfmetrics.registerFont(TTFont(font_reg_name, font_path))
-                
-                font_name = font_reg_name
-                print(f"✅ 폰트 등록 성공: {font_path} → {font_name}")
-                break
-            except Exception as e:
-                print(f"❌ 폰트 등록 실패 {font_path}: {e}")
-                continue
-    
-    print(f"🔤 최종 사용 폰트: {font_name}")
-    return font_name
-
-
-def clean_text_for_pdf(text):
-    """PDF 호환성을 위한 텍스트 정리"""
-    if not text:
-        return ""
-    
-    text = str(text)
-    
-    # 이모지를 텍스트로 변환
-    emoji_map = {
-        '🎯': '⦿',  '📚': '📖',  '🎨': '🖼',  '🤝': '👥',  '🔬': '•',
-        '✨': '★',  '🏠': '🏘',  '💼': '👔',  '📝': '✍',  '🌟': '⭐',
-        '📅': '[날짜]', '🎓': '[교육]', '💡': '[아이디어]', '🚀': '[시작]',
-        '❤️': '♥', '👍': '[좋음]', '🔥': '[인기]', '💪': '[힘]'
-    }
-    
-    for emoji, replacement in emoji_map.items():
-        text = text.replace(emoji, replacement)
-    
-    # HTML 특수문자 처리
-    text = text.replace('&', '&amp;')
-    text = text.replace('<', '&lt;')
-    text = text.replace('>', '&gt;')
-    
-    return text
-
-
-def create_pdf_report(career_data):
-    """진로 탐색 PDF 보고서 생성"""
-    # 한글 폰트 설정
-    font_name = setup_korean_font()
-    
-    # 임시 파일 생성
-    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.pdf')
-    temp_filename = temp_file.name
-    temp_file.close()
-    
-    # PDF 문서 생성
-    doc = SimpleDocTemplate(
-        temp_filename,
-        pagesize=A4,
-        leftMargin=inch*0.7,
-        rightMargin=inch*0.7,
-        topMargin=inch*0.8,
-        bottomMargin=inch*0.8
-    )
-    
-    # 스타일 설정
-    styles = getSampleStyleSheet()
-    
-    title_style = ParagraphStyle(
-        'KoreanTitle',
-        parent=styles['Title'],
-        fontName=font_name,
-        fontSize=22,
-        spaceAfter=30,
-        alignment=1  # 중앙 정렬
-    )
-    
-    heading_style = ParagraphStyle(
-        'KoreanHeading',
-        parent=styles['Heading2'],
-        fontName=font_name,
-        fontSize=15,
-        spaceAfter=12,
-        spaceBefore=18
-    )
-    
-    normal_style = ParagraphStyle(
-        'KoreanNormal',
-        parent=styles['Normal'],
-        fontName=font_name,
-        fontSize=11,
-        spaceAfter=10,
-        leading=16
-    )
-    
-    bullet_style = ParagraphStyle(
-        'KoreanBullet',
-        parent=styles['Normal'],
-        fontName=font_name,
-        fontSize=11,
-        spaceAfter=8,
-        leading=16,
-        leftIndent=20
-    )
-    
-    story = []
-    
-    # 제목
-    story.append(Paragraph("⦿ 드림로직 진로 탐색 결과", title_style))
-    story.append(Spacer(1, 20))
-    
-    # 생성 날짜
-    current_date = datetime.now().strftime("%Y년 %m월 %d일")
-    story.append(Paragraph(f"생성일: {current_date}", normal_style))
-    story.append(Spacer(1, 25))
-    
-    # 진로 탐색 섹션들
-    sections = [
-        ("1️⃣ 선택한 직업", career_data.get('career', '정보 없음')),
-        ("2️⃣ 직업 선택 이유", career_data.get('reasons', ['정보 없음'])),
-        ("3️⃣ 관심 있는 이슈", career_data.get('issues_selected', ['정보 없음'])),
-        ("4️⃣ 탐구 주제", career_data.get('topic', '정보 없음')),
-        ("5️⃣ 진로 목표", career_data.get('goal', '정보 없음')),
-        ("6️⃣ 중간 목표", career_data.get('midgoals', ['정보 없음'])),
-    ]
-    
-    for section_title, section_content in sections:
-        # 섹션 제목
-        clean_title = clean_text_for_pdf(section_title)
-        story.append(Paragraph(clean_title, heading_style))
-        
-        # 섹션 내용
-        if isinstance(section_content, list):
-            for i, item in enumerate(section_content, 1):
-                clean_item = clean_text_for_pdf(item)
-                if len(section_content) > 1:
-                    story.append(Paragraph(f"{i}. {clean_item}", bullet_style))
-                else:
-                    story.append(Paragraph(f"• {clean_item}", bullet_style))
-        else:
-            clean_content = clean_text_for_pdf(section_content)
-            story.append(Paragraph(f"• {clean_content}", bullet_style))
-        
-        story.append(Spacer(1, 15))
-    
-    # 최종 요약
-    final_summary = career_data.get('final_summary', '')
-    if final_summary:
-        story.append(Paragraph("7️⃣ 최종 종합 계획", heading_style))
-        
-        # 줄바꿈으로 분리하여 처리
-        summary_lines = str(final_summary).split('\n')
-        for line in summary_lines:
-            line = line.strip()
-            if line:
-                clean_line = clean_text_for_pdf(line)
-                story.append(Paragraph(clean_line, normal_style))
-    
-    # PDF 생성
-    try:
-        doc.build(story)
-        print(f"✅ PDF 생성 완료: {temp_filename}")
-        return temp_filename
-    except Exception as e:
-        print(f"❌ PDF 생성 오류: {e}")
-        return None
 
