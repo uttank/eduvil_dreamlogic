@@ -6,12 +6,13 @@
 import uuid
 import random
 from datetime import datetime
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, List
 from .models import (
     CareerStage, CareerExplorationSession, StudentInfo, StepResponse,
     StageQuestionResponse, STAGE_QUESTIONS, ENCOURAGEMENT_MESSAGES,
     CareerRecommendationResponse
 )
+from .openai_service import ai_service
 
 class MiddleSchoolCareerService:
     """중학생 진로 탐색 서비스"""
@@ -62,6 +63,61 @@ class MiddleSchoolCareerService:
                 stage=current_stage,
                 question=stage_data["question"],
                 choices=None,
+                encouragement=encouragement,
+                student_name=session.student_info.name if session.student_info else None
+            )
+        
+        # 4단계(미래 탐색)는 동적 선택지 생성
+        if current_stage == CareerStage.STEP_4:
+            # 이미 동적 선택지가 생성된 경우
+            if session.step4_dynamic_choices:
+                return StageQuestionResponse(
+                    stage=current_stage,
+                    question="미래 사회에서 특히 관심있는 이슈나 해결하고 싶은 문제를 선택해주세요.",
+                    choices=None,
+                    dynamic_choices=session.step4_dynamic_choices,
+                    encouragement=encouragement,
+                    student_name=session.student_info.name if session.student_info else None,
+                    regenerate_count=session.step4_regenerate_count,
+                    max_regenerate=5
+                )
+            
+            # 첫 번째 동적 선택지 생성
+            if ai_service and ai_service.is_available():
+                student_name = session.student_info.name if session.student_info else "학생"
+                responses_dict = {stage: response.dict() for stage, response in session.responses.items()}
+                
+                dynamic_choices = ai_service.generate_step4_future_issues(
+                    student_name=student_name,
+                    responses=responses_dict,
+                    regenerate_count=0,
+                    previous_issues=None
+                )
+                
+                if dynamic_choices:
+                    # 세션에 동적 선택지 저장
+                    session.step4_dynamic_choices = dynamic_choices
+                    session.step4_regenerate_count = 0
+                    session.step4_previous_issues = []
+                    self.sessions[session_id] = session  # 세션 업데이트
+                    
+                    return StageQuestionResponse(
+                        stage=current_stage,
+                        question="미래 사회에서 특히 관심있는 이슈나 해결하고 싶은 문제를 선택해주세요.",
+                        choices=None,
+                        dynamic_choices=dynamic_choices,
+                        encouragement=encouragement,
+                        student_name=session.student_info.name if session.student_info else None,
+                        regenerate_count=0,
+                        max_regenerate=5
+                    )
+            
+            # AI 서비스 실패시 기본 선택지 사용
+            fallback_choices = stage_data.get("choices", [])
+            return StageQuestionResponse(
+                stage=current_stage,
+                question=stage_data["question"],
+                choices=fallback_choices,
                 encouragement=encouragement,
                 student_name=session.student_info.name if session.student_info else None
             )
@@ -145,15 +201,39 @@ class MiddleSchoolCareerService:
         else:
             if not response:
                 return False, "응답을 입력해주세요.", None
-            if not current_stage or not response.validate_response(current_stage):
-                return False, "올바른 선택을 해주세요.", None
             
-            session.responses[current_stage] = response
-            session.completed_stages.append(current_stage)
-            
-            # 다음 단계 결정
-            next_stage = self._get_next_stage(current_stage)
-            session.current_stage = next_stage
+            # 4단계 동적 선택지 처리
+            if current_stage == CareerStage.STEP_4 and session.step4_dynamic_choices:
+                # 동적 선택지에서 선택한 경우
+                if response.choice_numbers:
+                    choice_num = response.choice_numbers[0]  # 하나만 선택
+                    if 1 <= choice_num <= len(session.step4_dynamic_choices):
+                        # 선택된 이슈를 텍스트로 저장
+                        selected_issue = session.step4_dynamic_choices[choice_num - 1]
+                        # 응답에 선택된 텍스트를 custom_answer로 저장
+                        response.custom_answer = selected_issue
+                        
+                        session.responses[current_stage] = response
+                        session.completed_stages.append(current_stage)
+                        
+                        # 다음 단계로 진행
+                        next_stage = self._get_next_stage(current_stage)
+                        session.current_stage = next_stage
+                    else:
+                        return False, "올바른 선택을 해주세요.", None
+                else:
+                    return False, "선택지를 선택해주세요.", None
+            else:
+                # 일반 선택지 처리
+                if not current_stage or not response.validate_response(current_stage):
+                    return False, "올바른 선택을 해주세요.", None
+                
+                session.responses[current_stage] = response
+                session.completed_stages.append(current_stage)
+                
+                # 다음 단계 결정
+                next_stage = self._get_next_stage(current_stage)
+                session.current_stage = next_stage
         
         # 세션 업데이트
         session.updated_at = datetime.now().isoformat()
@@ -358,6 +438,50 @@ class MiddleSchoolCareerService:
                         summary["future_concerns"].append(choices[choice_num - 1])
         
         return summary
+    
+    def regenerate_step4_choices(self, session_id: str) -> Tuple[bool, str, Optional[List[str]]]:
+        """4단계 선택지 재생성"""
+        session = self.get_session(session_id)
+        if not session:
+            return False, "세션을 찾을 수 없습니다.", None
+        
+        if session.current_stage != CareerStage.STEP_4:
+            return False, "4단계가 아닙니다.", None
+        
+        # 재생성 횟수 제한 확인
+        if session.step4_regenerate_count >= 5:
+            return False, "재생성 횟수 제한(5회)에 도달했습니다.", None
+        
+        if not ai_service or not ai_service.is_available():
+            return False, "AI 서비스를 사용할 수 없습니다.", None
+        
+        # 이전 이슈들 수집
+        if session.step4_dynamic_choices:
+            if not session.step4_previous_issues:
+                session.step4_previous_issues = []
+            session.step4_previous_issues.extend(session.step4_dynamic_choices)
+        
+        # 새로운 선택지 생성
+        student_name = session.student_info.name if session.student_info else "학생"
+        responses_dict = {stage: response.dict() for stage, response in session.responses.items()}
+        
+        new_choices = ai_service.generate_step4_future_issues(
+            student_name=student_name,
+            responses=responses_dict,
+            regenerate_count=session.step4_regenerate_count + 1,
+            previous_issues=session.step4_previous_issues
+        )
+        
+        if not new_choices:
+            return False, "새로운 선택지 생성에 실패했습니다.", None
+        
+        # 세션 업데이트
+        session.step4_dynamic_choices = new_choices
+        session.step4_regenerate_count += 1
+        session.updated_at = datetime.now().isoformat()
+        self.sessions[session_id] = session
+        
+        return True, f"새로운 선택지가 생성되었습니다. (재생성 {session.step4_regenerate_count}/5회)", new_choices
 
 # 전역 서비스 인스턴스
 career_service = MiddleSchoolCareerService()

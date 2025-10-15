@@ -315,6 +315,8 @@ function getStageTitle(stageNumber) {
 // 질문 화면 표시 함수
 function showQuestionScreen(questionData) {
     console.log('📋 질문 화면 표시:', questionData);
+    console.log('🔍 동적 선택지 확인:', questionData.dynamic_choices);
+    console.log('🔍 기본 선택지 확인:', questionData.choices);
     currentQuestionData = questionData;
     selectedChoices = [];
     
@@ -342,28 +344,37 @@ function showQuestionScreen(questionData) {
     }
     
     // 선택지 렌더링
-    if (choicesContainer && questionData.choices) {
+    if (choicesContainer) {
         choicesContainer.innerHTML = '';
         const isMultipleChoice = stageNumber === 1; // 1단계만 다중선택
         
-        questionData.choices.forEach((choice, index) => {
-            const choiceDiv = document.createElement('div');
-            choiceDiv.className = 'choice-item';
-            choiceDiv.style.cursor = 'pointer';
-            
-            const input = document.createElement('input');
-            input.type = isMultipleChoice ? 'checkbox' : 'radio';
-            input.name = 'choice';
-            input.value = index + 1;
-            input.id = `choice${index + 1}`;
-            
-            const label = document.createElement('label');
-            label.htmlFor = `choice${index + 1}`;
-            label.textContent = choice;
-            label.style.cursor = 'pointer';
-            
-            // "기타" 항목인지 확인
-            const isOtherOption = choice.includes('기타') || choice === '기타';
+        // 4단계 동적 선택지 확인
+        const choicesToRender = questionData.dynamic_choices || questionData.choices;
+        const isDynamicChoices = stageNumber === 4 && questionData.dynamic_choices;
+        
+        console.log('🔍 단계 번호:', stageNumber);
+        console.log('🔍 렌더링할 선택지:', choicesToRender);
+        console.log('🔍 동적 선택지 여부:', isDynamicChoices);
+        
+        if (choicesToRender) {
+            choicesToRender.forEach((choice, index) => {
+                const choiceDiv = document.createElement('div');
+                choiceDiv.className = 'choice-item';
+                choiceDiv.style.cursor = 'pointer';
+                
+                const input = document.createElement('input');
+                input.type = isMultipleChoice ? 'checkbox' : 'radio';
+                input.name = 'choice';
+                input.value = index + 1;
+                input.id = `choice${index + 1}`;
+                
+                const label = document.createElement('label');
+                label.htmlFor = `choice${index + 1}`;
+                label.textContent = choice;
+                label.style.cursor = 'pointer';
+                
+                // "기타" 항목인지 확인 (동적 선택지가 아닌 경우에만)
+                const isOtherOption = !isDynamicChoices && (choice.includes('기타') || choice === '기타');
             
             // 입력 변경 이벤트 핸들러
             const handleInputChange = () => {
@@ -410,8 +421,10 @@ function showQuestionScreen(questionData) {
                             }
                         });
                     }
-                    updateSelectedChoices();
                 }
+                
+                // 모든 경우에 선택 상태 업데이트
+                updateSelectedChoices();
             };
             
             // 전체 div 클릭으로도 선택 가능하도록
@@ -440,13 +453,33 @@ function showQuestionScreen(questionData) {
             choiceDiv.addEventListener('click', handleDivClick);
             input.addEventListener('change', handleInputChange);
             
-            choiceDiv.appendChild(input);
-            choiceDiv.appendChild(label);
-            choicesContainer.appendChild(choiceDiv);
-        });
-    }
-    
-    // 커스텀 입력창 초기화
+                choiceDiv.appendChild(input);
+                choiceDiv.appendChild(label);
+                choicesContainer.appendChild(choiceDiv);
+            });
+            
+            // 4단계 동적 선택지인 경우 재생성 버튼 추가
+            if (isDynamicChoices) {
+                const regenerateCount = questionData.regenerate_count || 0;
+                const maxRegenerate = questionData.max_regenerate || 5;
+                
+                if (regenerateCount < maxRegenerate) {
+                    const regenerateDiv = document.createElement('div');
+                    regenerateDiv.className = 'regenerate-container';
+                    regenerateDiv.style.marginTop = '15px';
+                    regenerateDiv.style.textAlign = 'center';
+                    
+                    const regenerateBtn = document.createElement('button');
+                    regenerateBtn.className = 'btn btn-secondary';
+                    regenerateBtn.textContent = `🔄 다른 선택지 보기 (${regenerateCount}/${maxRegenerate})`;
+                    regenerateBtn.onclick = () => regenerateStep4Choices();
+                    
+                    regenerateDiv.appendChild(regenerateBtn);
+                    choicesContainer.appendChild(regenerateDiv);
+                }
+            }
+        }
+    }    // 커스텀 입력창 초기화
     const customAnswerContainer = document.getElementById('customAnswerContainer');
     const customAnswerInput = document.getElementById('customAnswer');
     if (customAnswerContainer) {
@@ -556,6 +589,67 @@ function updateSubmitButton() {
         }
         
         submitButton.disabled = !canSubmit;
+    }
+}
+
+// 4단계 선택지 재생성 함수
+async function regenerateStep4Choices() {
+    console.log('🔄 4단계 선택지 재생성 요청');
+    
+    if (!sessionId) {
+        showError('세션이 유효하지 않습니다.');
+        return;
+    }
+    
+    try {
+        showLoading(true);
+        
+        const response = await fetch(`${API_BASE_URL}/career/${sessionId}/regenerate-step4`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            console.log('✅ 4단계 재생성 성공:', data);
+            
+            // 새로운 선택지로 업데이트
+            if (data.data && data.data.choices) {
+                // 현재 질문 데이터에 새로운 동적 선택지 업데이트
+                currentQuestionData.dynamic_choices = data.data.choices;
+                currentQuestionData.regenerate_count = data.data.regenerate_count;
+                
+                // 화면 다시 렌더링
+                showQuestionScreen(currentQuestionData);
+                
+                console.log('✅ 새로운 선택지가 생성되었습니다! 🎯');
+                // showSuccess('새로운 선택지가 생성되었습니다! 🎯');
+            } else {
+                console.error('❌ 응답 데이터가 올바르지 않습니다:', data);
+                showError('선택지 업데이트에 실패했습니다.');
+            }
+        } else {
+            console.error('❌ 4단계 재생성 실패:', response.status, response.statusText);
+            try {
+                const errorData = await response.json();
+                console.error('❌ 에러 상세:', errorData);
+                showError(errorData.detail || '선택지 재생성에 실패했습니다.');
+            } catch (parseError) {
+                console.error('❌ 응답 파싱 오류:', parseError);
+                showError(`서버 오류 (${response.status}): 선택지 재생성에 실패했습니다.`);
+            }
+        }
+    } catch (error) {
+        console.error('❌ 4단계 재생성 오류:', error);
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            showError('서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요.');
+        } else {
+            showError(`오류가 발생했습니다: ${error.message}`);
+        }
+    } finally {
+        showLoading(false);
     }
 }
 
@@ -1419,6 +1513,12 @@ function showLoading(show) {
 function showError(message) {
     console.error('❌ 오류:', message);
     alert(`❌ ${message}`);
+}
+
+// 성공 메시지 표시 함수
+function showSuccess(message) {
+    console.log('✅ 성공:', message);
+    alert(`✅ ${message}`);
 }
 
 console.log('🚀 중학생 진로탐색 JavaScript 로드 완료');

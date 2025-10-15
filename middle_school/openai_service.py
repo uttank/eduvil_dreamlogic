@@ -6,7 +6,7 @@
 
 import os
 import logging
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 from openai import OpenAI
 from dotenv import load_dotenv
 
@@ -107,6 +107,74 @@ class MiddleSchoolAIService:
         except Exception as e:
             logger.error(f"중학생 진로 추천 생성 오류: {str(e)}")
             return self._get_fallback_recommendation(student_name)
+    
+    def generate_step4_future_issues(self, student_name: str, responses: Dict, regenerate_count: int = 0, previous_issues: Optional[List[str]] = None) -> Optional[List[str]]:
+        """4단계 미래 이슈 선택지 생성
+        
+        Args:
+            student_name (str): 학생 이름
+            responses (Dict): 1-3단계 응답 데이터
+            regenerate_count (int): 재생성 횟수 (0-4)
+            previous_issues (list): 이전에 생성된 이슈들 (중복 방지용)
+            
+        Returns:
+            Optional[list]: 생성된 5가지 이슈 선택지 또는 None
+        """
+        if not self.is_available() or not self.client:
+            logger.warning("AI 서비스를 사용할 수 없습니다.")
+            return self._get_fallback_step4_choices()
+        
+        try:
+            # 1-3단계 응답 데이터를 텍스트로 변환
+            response_text = self._format_step123_responses_for_ai(student_name, responses)
+            
+            # 4단계 전용 프롬프트 생성
+            system_prompt = self._get_step4_system_prompt()
+            user_prompt = self._get_step4_user_prompt(student_name, response_text, regenerate_count, previous_issues)
+            
+            # 프롬프트 로깅
+            logger.info("[LLM 프롬프트 - 4단계]")
+            logger.info(f"System prompt: {system_prompt}")
+            logger.info(f"User prompt: {user_prompt}")
+            print("\n========== [LLM 프롬프트 - 4단계] ==========")
+            print(f"System prompt:\n{system_prompt}\n")
+            print(f"User prompt:\n{user_prompt}\n")
+            print("===========================================\n")
+            
+            # OpenAI API 호출
+            if "gpt-5" in self.model.lower():
+                response = self.client.chat.completions.create(
+                    model=self.model,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt}
+                    ],
+                    max_completion_tokens=800
+                )
+            else:
+                response = self.client.chat.completions.create(
+                    model=self.model,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt}
+                    ],
+                    temperature=0.8 if regenerate_count > 0 else 0.7,
+                    max_tokens=800
+                )
+            
+            # 응답 파싱
+            content = response.choices[0].message.content
+            if content:
+                content = content.strip()
+                issues = self._parse_step4_issues(content)
+                logger.info(f"4단계 미래 이슈 생성 완료: {len(issues)}개")
+                return issues
+            
+            return self._get_fallback_step4_choices()
+            
+        except Exception as e:
+            logger.error(f"4단계 미래 이슈 생성 오류: {str(e)}")
+            return self._get_fallback_step4_choices()
     
     def generate_middle_school_dream_logic(self, student_name: str, responses: Dict, final_dream: str) -> Optional[str]:
         """중학생용 드림로직 생성 (6단계) - 학교생활·일상 실천 중심
@@ -452,6 +520,164 @@ class MiddleSchoolAIService:
 "{student_name}의 열정과 노력이 있다면 분명 멋진 꿈을 이룰 수 있을 거예요!
 일상 속 작은 실천이 쌓이면 꿈에 한 걸음 다가설 거예요!"
 """
+
+    def _format_step123_responses_for_ai(self, student_name: str, responses: Dict) -> str:
+        """1-3단계 응답 데이터를 AI가 이해할 수 있도록 포맷팅
+        
+        Args:
+            student_name (str): 학생 이름
+            responses (Dict): 1-3단계 응답 데이터
+            
+        Returns:
+            str: 포맷팅된 응답 텍스트
+        """
+        formatted_text = f"학생 이름: {student_name}\n\n"
+        
+        # 중학생용 1-3단계 선택지 매핑
+        stage_choices = {
+            'step_1': [
+                "스토리 기획·세계관 만들기",
+                "캐릭터/콘셉트 아트(드로잉·컬러)",
+                "2D 애니메이션(키프레임·타이밍)",
+                "3D/모션그래픽(카메라 워크·이펙트)",
+                "코딩·게임/앱 프로토타이핑",
+                "로봇·메이킹(하드웨어/센서)",
+                "과학 실험·탐구(자료 수집·그래프)",
+                "스포츠/피지컬 트레이닝",
+                "동물·자연 관찰·보호 활동",
+                "요리·푸드 디자인/영양",
+                "영상 촬영·편집·사운드",
+                "탐구·리서치·인터뷰(트렌드 조사)",
+                "기타(직접 입력)"
+            ],
+            'step_2': [
+                "문제정의(핵심을 빠르게 짚음)",
+                "창의발상(아이디어가 잘 떠오름)",
+                "리서치(근거·사례를 정확히 찾음)",
+                "스토리텔링/설득(쉽게 설명·이해시킴)",
+                "시각화/드로잉(그림·도식으로 표현)",
+                "기술실행(툴 숙련·구현력)",
+                "협업/리더십(소통·조율·분담)",
+                "발표/커뮤니케이션(무대/카메라 앞에서도 침착)",
+                "분석/개선(데이터 비교·피드백 반영)",
+                "자기관리(마감·계획·시간관리)",
+                "기타(직접 입력)"
+            ],
+            'step_3': [
+                "누군가에게 도움/서비스 제공",
+                "새로운 것을 만들어 세상에 내놓기",
+                "어려운 문제를 해결하며 성장하기",
+                "무대·스크린에서 표현·공유하기",
+                "자연/동물을 지키고 회복 돕기",
+                "팀 프로젝트로 공동 목표 달성하기",
+                "지식을 배우고 체계화·정리하기",
+                "사람들을 웃게 하거나 감동 주기",
+                "목표를 세우고 꾸준히 실천/관리하기",
+                "기타(직접 입력)"
+            ]
+        }
+        
+        stage_labels = {
+            'step_1': '1단계 (흥미)',
+            'step_2': '2단계 (장점)', 
+            'step_3': '3단계 (가치관)'
+        }
+        
+        # 1-3단계 응답만 처리
+        for stage_key in ['step_1', 'step_2', 'step_3']:
+            if stage_key in responses:
+                response = responses[stage_key]
+                choice_numbers = response.get('choice_numbers', [])
+                custom_answer = response.get('custom_answer', '')
+                
+                formatted_text += f"{stage_labels[stage_key]}:\n"
+                
+                # 선택지 번호를 텍스트로 변환
+                for choice_num in choice_numbers:
+                    if choice_num <= len(stage_choices[stage_key]):
+                        choice_text = stage_choices[stage_key][choice_num - 1]
+                        formatted_text += f"  - {choice_text}\n"
+                
+                # 기타 선택시 직접 입력 내용 추가
+                if custom_answer:
+                    formatted_text += f"  - 기타: {custom_answer}\n"
+                
+                formatted_text += "\n"
+        
+        return formatted_text
+    
+    def _get_step4_system_prompt(self) -> str:
+        """4단계 시스템 프롬프트"""
+        return """너는 중학생 진로 탐색을 돕는 전문 어시스턴트야.
+사용자의 흥미, 장점, 가치관을 바탕으로 미래에 관심을 가질 만한 사회적, 기술적 최신 이슈나 해결과제 5가지를 제시해줘.
+
+조건:
+1. 대한민국 중학생이 관심을 가질 수 있는 수준의 주제
+2. 각 이슈는 간결하고 이해하기 쉽게 표현
+3. 현실적이고 구체적인 문제들
+4. 학생의 흥미, 장점, 가치관과 연결되는 내용
+5. 번호 없이 단순히 이슈명만 나열
+
+응답 형식:
+- 스마트시티 교통/환경 문제를 해결하는 시뮬레이션 게임 개발
+- 저전력/친환경 컴퓨팅을 위한 '그린 코딩' 및 게임 엔진 최적화
+- 학교 폭력 예방 및 심리 지원을 위한 AI 기반 익명 소통 시스템
+- 1인 개발자를 위한 자동화된 게임 테스트 및 버그 예측 시스템
+- 디지털 격차 해소를 위한 코딩 교육 콘텐츠의 인터랙티브 재구성"""
+    
+    def _get_step4_user_prompt(self, student_name: str, response_text: str, regenerate_count: int, previous_issues: Optional[List[str]] = None) -> str:
+        """4단계 사용자 프롬프트"""
+        prompt = f"""학생 정보:
+{response_text}
+
+나는 중학생이야. 흥미, 장점, 가치관을 통해 미래에 관심을 가질 주제를 찾고 싶어.
+위 1~3단계 응답과 관련한 사회, 기술적인 최신 이슈 또는 해결과제를 5가지 제시해줘."""
+
+        if regenerate_count > 0 and previous_issues:
+            prompt += f"\n\n중요: 아래 기존에 제시된 이슈들과는 완전히 다른 새로운 주제들로 제시해줘.\n기존 이슈들:\n"
+            for issue in previous_issues:
+                prompt += f"- {issue}\n"
+        
+        if regenerate_count > 0:
+            prompt += f"\n가능한 중복되지 않는 주제로 5가지 새로 제시해줘. (재생성 {regenerate_count}회차)"
+        
+        return prompt
+    
+    def _parse_step4_issues(self, content: str) -> List[str]:
+        """AI 응답에서 이슈 목록 파싱"""
+        issues = []
+        lines = content.split('\n')
+        
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+            
+            # 다양한 형식의 리스트 처리
+            if line.startswith('-') or line.startswith('•') or line.startswith('*'):
+                issue = line[1:].strip()
+                if issue:
+                    issues.append(issue)
+            elif line and not line.startswith('#') and not line.startswith('**'):
+                # 번호가 있는 경우 제거
+                import re
+                clean_line = re.sub(r'^\d+\.\s*', '', line)
+                if clean_line and len(clean_line) > 10:  # 너무 짧은 텍스트 제외
+                    issues.append(clean_line)
+        
+        # 5개로 제한
+        return issues[:5] if len(issues) >= 5 else issues
+    
+    def _get_fallback_step4_choices(self) -> List[str]:
+        """4단계 기본 선택지 (AI 서비스 실패시 사용)"""
+        return [
+            "기후변화와 환경 보호를 위한 지속가능한 기술 개발",
+            "AI와 인간이 함께 살아가는 미래 사회 설계",
+            "사이버 보안과 개인정보 보호 강화",
+            "고령화 사회의 돌봄 서비스와 기술 혁신",
+            "디지털 격차 해소와 정보 접근성 향상"
+        ]
+
 
 # 전역 AI 서비스 인스턴스
 ai_service = MiddleSchoolAIService() if os.getenv('OPENAI_API_KEY') else None

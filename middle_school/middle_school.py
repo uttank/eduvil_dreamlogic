@@ -210,6 +210,35 @@ async def submit_response(session_id: str, request: NextStageRequest):
         logger.error(f"응답 제출 오류: {str(e)}")
         raise HTTPException(status_code=500, detail="응답 제출에 실패했습니다.")
 
+@app.post("/career/{session_id}/regenerate-step4", response_model=ApiResponse)
+async def regenerate_step4_choices(session_id: str):
+    """4단계 선택지 재생성"""
+    try:
+        success, message, new_choices = career_service.regenerate_step4_choices(session_id)
+        
+        if not success:
+            raise HTTPException(status_code=400, detail=message)
+        
+        # 세션에서 재생성 횟수 가져오기
+        session = career_service.get_session(session_id)
+        regenerate_count = session.step4_regenerate_count if session else 0
+        
+        return ApiResponse(
+            success=True,
+            message=message,
+            data={
+                "choices": new_choices,
+                "regenerate_count": regenerate_count,
+                "session_id": session_id
+            }
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"4단계 재생성 오류: {str(e)}")
+        raise HTTPException(status_code=500, detail="선택지 재생성에 실패했습니다.")
+
 @app.post("/career/{session_id}/recommend", response_model=ApiResponse)
 async def get_career_recommendation(session_id: str, request: RecommendationRequest = RecommendationRequest()):
     """AI 기반 진로 추천 생성 (5단계)"""
