@@ -191,6 +191,10 @@ class CareerExplorationSession(BaseModel):
     final_career_goal: Optional[str] = None
     # 6단계 관련 필드
     dream_logic: Optional[str] = None
+    # 4단계 동적 선택지 관련 필드
+    step4_dynamic_choices: Optional[List[str]] = None
+    step4_regenerate_count: int = 0
+    step4_previous_issues: Optional[List[str]] = None
     created_at: str
     updated_at: str
 
@@ -203,6 +207,10 @@ class StageQuestionResponse(BaseModel):
     student_name: Optional[str] = None
     # 5단계 전용 필드
     ai_recommendation: Optional[str] = None
+    # 4단계 전용 필드 (동적 선택지)
+    dynamic_choices: Optional[List[str]] = None
+    regenerate_count: Optional[int] = None
+    max_regenerate: Optional[int] = None
 
 class NextStageRequest(BaseModel):
     """다음 단계 요청"""
