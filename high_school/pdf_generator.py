@@ -190,6 +190,35 @@ class HighSchoolCareerPDFGenerator:
                 spaceAfter=5,
                 textColor=colors.HexColor('#95a5a6'),
                 leading=12
+            ),
+            'final_goal': ParagraphStyle(
+                'FinalGoal',
+                parent=styles['Normal'],
+                fontName=self.font_name,
+                fontSize=11,  # normal과 같은 크기
+                spaceBefore=20,  # 상단 마진 증가
+                spaceAfter=20,   # 하단 마진 증가
+                alignment=1,  # 중앙 정렬
+                textColor=colors.HexColor('#e74c3c'),
+                leading=16,  # normal과 같은 leading
+                borderWidth=3,
+                borderColor=colors.HexColor('#e74c3c'),
+                borderPadding=15,
+                backColor=colors.HexColor('#fdf2f2')
+            ),
+            'mid_goal': ParagraphStyle(
+                'MidGoal',
+                parent=styles['Normal'],
+                fontName=self.font_name,
+                fontSize=11,  # normal과 같은 크기
+                spaceBefore=20,  # 상단 마진 증가
+                spaceAfter=20,   # 하단 마진 증가
+                textColor=colors.HexColor('#8e44ad'),
+                leading=16,  # normal과 같은 leading
+                borderWidth=2,
+                borderColor=colors.HexColor('#8e44ad'),
+                borderPadding=12,
+                backColor=colors.HexColor('#f8f5ff')
             )
         }
         
@@ -336,13 +365,13 @@ class HighSchoolCareerPDFGenerator:
             self._add_header(story, styles, career_data)
             
             print("📋 요약 추가 중...")
-            self._add_summary(story, styles, career_data)
+            #self._add_summary(story, styles, career_data)
             
             print("🎯 드림로직 추가 중...")
             self._add_dream_logic(story, styles, career_data)
             
             print("📄 푸터 추가 중...")
-            self._add_footer(story, styles)
+            #self._add_footer(story, styles)
             
             print("🔨 PDF 빌드 중...")
             # PDF 빌드
@@ -421,10 +450,25 @@ class HighSchoolCareerPDFGenerator:
         
         # 최종 요약을 줄바꿈으로 분리하여 처리
         summary_lines = str(final_summary).split('\n')
+        
         for line in summary_lines:
             line = line.strip()
-            if line:
-                clean_line = self._clean_text_for_pdf(line)
+            if not line:
+                continue
+            
+            # 마지막 설명 문단 제거 - "이 계획은 고등학생" 으로 시작하는 부분부터는 스킵
+            if line.startswith("이 계획은 고등학생") or "다각도로" in line or "창의적이고 실천적인" in line:
+                break
+            
+            clean_line = self._clean_text_for_pdf(line)
+            
+            # [최종 목표(꿈)] 패턴 확인
+            if "[최종 목표(꿈)]" in line or "🎯 [최종 목표(꿈)]" in line:
+                story.append(self._safe_paragraph(clean_line, styles['final_goal']))
+            # [중간목표] 패턴 확인
+            elif ("[중간목표" in line and "]" in line) or ("📚 [중간목표" in line) or ("🎨 [중간목표" in line) or ("🤝 [중간목표" in line):
+                story.append(self._safe_paragraph(clean_line, styles['mid_goal']))
+            else:
                 story.append(self._safe_paragraph(clean_line, styles['normal']))
         
         story.append(Spacer(1, 20))
