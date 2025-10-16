@@ -377,7 +377,7 @@ class CareerRecommendationService:
         values = self._extract_choices_text_with_stage(responses.get(CareerStage.STEP_3, {}), CareerStage.STEP_3)
         
         system_prompt = """당신은 초등학생 진로 상담사입니다.
-학생의 흥미, 장점, 가치관을 분석하여 사회/기술적 최신 이슈나 해결과제를 5가지 제시해주세요.
+학생의 흥미, 장점, 가치관을 분석하여 관심분야에서 미래사회에 대두될만한 문제 사항을 5가지 제시해주세요.
 
 중요한 조건:
 1. (적합성) 초등 눈높이 표현으로 친절한 말투, 모호어 금지
@@ -399,7 +399,7 @@ AI와 함께하는 나만의 캐릭터 및 스토리 창작 (A.I. Co-Creation)
 장점: {strengths}
 가치관: {values}
 
-위 정보를 바탕으로 {student_name}님이 관심을 가질 만한 사회/기술적 최신 이슈나 해결과제를 5가지 제시해주세요.
+위 정보를 바탕으로 {student_name}님이 관심을 가질 만한 관심분야에서 미래사회에 대두될만한 문제 사항을 5가지 제시해주세요.
 각 이슈는 학생의 흥미, 장점, 가치관과 연결되어야 합니다.
 """
 
